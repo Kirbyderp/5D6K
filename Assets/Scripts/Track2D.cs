@@ -5,6 +5,7 @@ using UnityEngine;
 public class Track2D : MonoBehaviour
 {
     public int trackNum;
+    private bool isHolding = false;
     
     // Start is called before the first frame update
     void Start()
@@ -18,6 +19,16 @@ public class Track2D : MonoBehaviour
         
     }
 
+    public bool IsHolding()
+    {
+        return isHolding;
+    }
+
+    public void SetIsHolding(bool holdIn)
+    {
+         isHolding = holdIn;
+    }
+
     public void MoveNotesDown(float distance)
     {
         RectTransform[] allChildren = GetComponentsInChildren<RectTransform>();
@@ -25,7 +36,9 @@ public class Track2D : MonoBehaviour
         {
             if (child.gameObject.CompareTag("Note"))
             {
-                child.position = new Vector3(child.position.x, child.position.y - distance, child.position.z);
+                child.localPosition = new Vector3(child.localPosition.x,
+                                                  child.localPosition.y - distance,
+                                                  child.localPosition.z);
             }
         }
     }

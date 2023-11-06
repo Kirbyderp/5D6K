@@ -40,20 +40,45 @@ public class Song
         for (int i = 0; i < note2DCount; i++)
         {
             line = reader.ReadLine();
-            all2DNotes[i] = new Note2D(int.Parse(line.Substring(0, 1)), float.Parse(line.Substring(2)));
+            all2DNotes[i] = new Note2D(int.Parse(line.Substring(0, 1)),
+                                       int.Parse(line.Substring(2, 1)),
+                                       float.Parse(line.Substring(4)));
             //Debug.Log(all2DNotes[i]);
         }
         line = reader.ReadLine();
         for (int i = 0; i < note3DCount; i++)
         {
             line = reader.ReadLine();
-            //Initialize 3D Note Entry
+            int[] intsNeeded = new int[2] {int.Parse(line.Substring(0, 1)),
+                                           int.Parse(line.Substring(2, 1)) };
+            line = line.Substring(4);
+            float[] floatsNeeded = new float[4];
+            for (int j = 0; j < 4; j++)
+            {
+                if (j < 3)
+                {
+                    spaceIndex = line.IndexOf(" ");
+                    floatsNeeded[i] = float.Parse(line.Substring(0, spaceIndex));
+                    line = line.Substring(spaceIndex + 1);
+                }
+                else
+                {
+                    floatsNeeded[i] = float.Parse(line);
+                }
+            }
+            all3DNotes[i] = new Note3D(intsNeeded[0], intsNeeded[1], floatsNeeded[0],
+                            new Vector3(floatsNeeded[1], floatsNeeded[2], floatsNeeded[3]));
         }
     }
 
     public Note2D[] GetAll2DNotes()
     {
         return all2DNotes;
+    }
+
+    public Note3D[] GetAll3DNotes()
+    {
+        return all3DNotes;
     }
 
     public float GetBeatLength()

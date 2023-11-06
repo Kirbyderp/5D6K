@@ -4,21 +4,31 @@ using UnityEngine;
 
 public class Note2D
 {
-    private int trackNum;
+    private int trackNum; //1-4
+    private int type; //0: single hit, 1: hold start, 2: hold end
     private float time;
-    private bool hasSpawned, wasHit;
+    private bool hasSpawned, wasHit, wasMissed;
+
     private int spawnIndex;
 
-    public Note2D(int trackIn, float timeIn)
+    public Note2D(int trackIn, int typeIn, float timeIn)
     {
         trackNum = trackIn;
+        type = typeIn;
         time = timeIn;
         hasSpawned = false;
+        wasHit = false;
+        wasMissed = false;
     }
 
     public int GetTrackNum()
     {
         return trackNum;
+    }
+
+    public int GetNoteType()
+    {
+        return type;
     }
 
     public float GetTime()
