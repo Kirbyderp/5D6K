@@ -33,7 +33,7 @@ public class SongManager : MonoBehaviour
     public InputDevice leftHand, rightHand;
 
     //DEBUG VARS
-    //public GameObject[] outlines;
+    public GameObject[] outlines;
 
     // Start is called before the first frame update
     void Start()
@@ -43,13 +43,12 @@ public class SongManager : MonoBehaviour
                                        GameObject.Find("Track2D2").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D3").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D4").GetComponent<Track2D>()};
-        PlaySong();
-        /*outlines = new GameObject[4];
+        outlines = new GameObject[4];
         for (int i = 0; i < 4; i++)
         {
             outlines[i] = GameObject.Find("Outline" + (i + 1));
             outlines[i].GetComponent<Image>().color = Color.red;
-        }*/
+        }
     }
 
     // Update is called once per frame
@@ -101,13 +100,13 @@ public class SongManager : MonoBehaviour
             {
                 HitTrack(1);
                 pressingLGrip = true;
-                //outlines[0].GetComponent<Image>().color = Color.blue;
+                outlines[0].GetComponent<Image>().color = Color.blue;
             }
             else if (curLGrip == false && pressingLGrip == true)
             {
                 ReleaseTrack(1);
                 pressingLGrip = false;
-                //outlines[0].GetComponent<Image>().color = Color.red;
+                outlines[0].GetComponent<Image>().color = Color.red;
             }
 
             //Track 2
@@ -115,13 +114,13 @@ public class SongManager : MonoBehaviour
             {
                 HitTrack(2);
                 pressingLTrigger = true;
-                //outlines[1].GetComponent<Image>().color = Color.blue;
+                outlines[1].GetComponent<Image>().color = Color.blue;
             }
             else if (curLTrigger == false && pressingLTrigger == true)
             {
                 ReleaseTrack(2);
                 pressingLTrigger = false;
-                //outlines[1].GetComponent<Image>().color = Color.red;
+                outlines[1].GetComponent<Image>().color = Color.red;
             }
 
             //Track 3
@@ -129,13 +128,13 @@ public class SongManager : MonoBehaviour
             {
                 HitTrack(3);
                 pressingRTrigger = true;
-                //outlines[2].GetComponent<Image>().color = Color.blue;
+                outlines[2].GetComponent<Image>().color = Color.blue;
             }
             else if (curRTrigger == false && pressingRTrigger == true)
             {
                 ReleaseTrack(3);
                 pressingRTrigger = false;
-                //outlines[2].GetComponent<Image>().color = Color.red;
+                outlines[2].GetComponent<Image>().color = Color.red;
             }
 
             //Track 4
@@ -143,13 +142,13 @@ public class SongManager : MonoBehaviour
             {
                 HitTrack(4);
                 pressingRGrip = true;
-                //outlines[3].GetComponent<Image>().color = Color.blue;
+                outlines[3].GetComponent<Image>().color = Color.blue;
             }
             else if (curRGrip == false && pressingRGrip == true)
             {
                 ReleaseTrack(4);
                 pressingRGrip = false;
-                //outlines[3].GetComponent<Image>().color = Color.red;
+                outlines[3].GetComponent<Image>().color = Color.red;
             }
 
 
@@ -200,10 +199,10 @@ public class SongManager : MonoBehaviour
                 }
 
                 //Spawning Notes
-                if (!note.HasSpawned() && (curTime + spawn3DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
+                if (!note.HasSpawned() && (curTime + spawn2DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
                 {
                     spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetNoteType()],
-                                                                 all2DTracks[note.GetTrackNum() - 1].transform);
+                                                                   all2DTracks[note.GetTrackNum() - 1].transform);
                     note.Spawn();
                     note.SetSpawnIndex(note2DSpawnIndex);
                     note2DSpawnIndex++;
@@ -226,7 +225,7 @@ public class SongManager : MonoBehaviour
                 }
 
                 //Spawning Notes
-                if (!note.HasSpawned() && (curTime + spawn2DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
+                if (!note.HasSpawned() && (curTime + spawn3DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
                 {
                     spawned3DNotes[note3DSpawnIndex] = Instantiate(note3DObjects[note.GetNoteType()],
                                                                    note.GetStartingPos(), Quaternion.identity);
