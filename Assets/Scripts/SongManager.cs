@@ -6,19 +6,23 @@ using UnityEngine.UI;
 
 public class SongManager : MonoBehaviour
 {
-    public static readonly string[] songPaths = {"Assets/Songs/TestSong.txt"}; 
+    public static readonly string[] songPaths = { "Assets/Songs/TestSong.txt" };
+    public static readonly string[] audioPaths = { "Audio/TestSong" };
     private Song curSong;
     private bool isSongPlaying = false;
     private float curTime;
     private int curSec = 0;
-    private float hitLeniency = .15f;
+    private float hitLeniency = .15f, hit3DLeniency = .25f, distance3DLeniency = .381f;
     private Track2D[] all2DTracks;
+    private Track3D[] all3DTracks;
     public GameObject[] note2DObjects, note3DObjects;
     private GameObject[] spawned2DNotes, spawned3DNotes;
     private int note2DSpawnIndex, note3DSpawnIndex;
-    private float spawn2DBeatsInAdvance = 2, spawn3DBeatsInAdvance = 4;
+    private float spawn2DBeatsInAdvance = 2, spawn3DBeatsInAdvance = 3;
     private Note2D[] note2Ds;
     private Note3D[] note3Ds;
+    private AudioClip songAudio;
+    private AudioSource audioSource;
 
     private bool pressingLGrip = false;
     private bool pressingLTrigger = false;
@@ -34,15 +38,20 @@ public class SongManager : MonoBehaviour
 
     //DEBUG VARS
     public GameObject[] outlines;
+    //public GameObject leftHandSphere, rightHandSphere;
+
 
     // Start is called before the first frame update
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         LoadSong(0);
         all2DTracks = new Track2D[4] { GameObject.Find("Track2D1").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D2").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D3").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D4").GetComponent<Track2D>()};
+        all3DTracks = new Track3D[2] { GameObject.Find("Track3D5").GetComponent<Track3D>(),
+                                       GameObject.Find("Track3D6").GetComponent<Track3D>()};
         outlines = new GameObject[4];
         for (int i = 0; i < 4; i++)
         {
@@ -87,6 +96,11 @@ public class SongManager : MonoBehaviour
                 track.MoveNotesDown(deltaTime / (curSong.GetBeatLength() * spawn2DBeatsInAdvance)
                                     * (track.gameObject.GetComponent<RectTransform>().sizeDelta.y -
                                     note2DObjects[0].GetComponent<RectTransform>().sizeDelta.y));
+            }
+
+            foreach (Track3D track in all3DTracks)
+            {
+                track.MoveNotesForwards(deltaTime / (curSong.GetBeatLength() * spawn3DBeatsInAdvance), note3Ds);
             }
 
             //Check if user pressed or released any buttons down for 2D Notes
@@ -151,6 +165,19 @@ public class SongManager : MonoBehaviour
                 outlines[3].GetComponent<Image>().color = Color.red;
             }
 
+            //Check where the user's hands are for 3D notes
+            leftHand.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 leftHandPos);
+            rightHand.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 rightHandPos);
+            //leftHandSphere.transform.position = new Vector3(-leftHandPos.z, leftHandPos.y, leftHandPos.x);
+            //rightHandSphere.transform.position = new Vector3(-rightHandPos.z, rightHandPos.y, rightHandPos.x);
+            Vector3 leftHandPosFixed = new Vector3(-leftHandPos.z, leftHandPos.y, leftHandPos.x);
+            Vector3 rightHandPosFixed = new Vector3(-rightHandPos.z, rightHandPos.y, rightHandPos.x);
+
+            //Track 5
+            Hit3DNotes(5, leftHandPosFixed);
+
+            //Track 6
+            Hit3DNotes(6, rightHandPosFixed);
 
             //DEBUG KEYBOARD 2D INPUTS
             if (Input.GetKeyDown(track1Hit))
@@ -195,7 +222,7 @@ public class SongManager : MonoBehaviour
                 {
                     Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                     note.Hit();
-                    Debug.Log("Despawned");
+                    //Debug.Log("Despawned");
                 }
 
                 //Spawning Notes
@@ -214,10 +241,11 @@ public class SongManager : MonoBehaviour
                 }
             }
 
+            //Spawn and despawn 3D notes based on the time that has elapsed
             foreach (Note3D note in note3Ds)
             {
                 //Despawning Notes
-                if (!note.WasHit() && (curTime - hitLeniency) > note.GetTime())
+                if (!note.WasHit() && (curTime - hit3DLeniency) > note.GetTime())
                 {
                     Destroy(spawned3DNotes[note.GetSpawnIndex()]);
                     note.Hit();
@@ -228,9 +256,11 @@ public class SongManager : MonoBehaviour
                 if (!note.HasSpawned() && (curTime + spawn3DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
                 {
                     spawned3DNotes[note3DSpawnIndex] = Instantiate(note3DObjects[note.GetNoteType()],
-                                                                   note.GetStartingPos(), Quaternion.identity);
+                                                                   note.GetStartingPos(), Quaternion.identity,
+                                                                   all3DTracks[note.GetTrackNum() - 5].transform);
                     note.Spawn();
                     note.SetSpawnIndex(note3DSpawnIndex);
+                    spawned3DNotes[note3DSpawnIndex].GetComponent<Note3DID>().SetNoteID(note3DSpawnIndex);
                     note3DSpawnIndex++;
                     //Debug.Log("Spawned");
                 }
@@ -263,11 +293,19 @@ public class SongManager : MonoBehaviour
         note3Ds = curSong.GetAll3DNotes();
         spawned2DNotes = new GameObject[curSong.GetAll2DNotes().Length];
         spawned3DNotes = new GameObject[curSong.GetAll3DNotes().Length];
+        songAudio = Resources.Load<AudioClip>(audioPaths[songIndex]);
+        audioSource.clip = songAudio;
+        float curVol = audioSource.volume;
+        audioSource.volume = 0;
+        audioSource.Play();
+        audioSource.Stop();
+        audioSource.volume = curVol;
     }
 
     public void PlaySong()
     {
         isSongPlaying = true;
+        audioSource.Play();
     }
 
     public void HitTrack(int trackNum)
@@ -294,21 +332,43 @@ public class SongManager : MonoBehaviour
     {
         foreach (Note2D note in note2Ds)
         {
-            if (!note.WasHit() && note.GetTrackNum() == trackNum &&
+            if (!note.WasHit() && note.GetTrackNum() == trackNum && note.HasSpawned() &&
                 Mathf.Abs(curTime - note.GetTime()) < hitLeniency &&
                 note.GetNoteType() == 2)
             {
                 Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                 note.Hit();
                 all2DTracks[trackNum - 1].SetIsHolding(false);
-                Debug.Log("Note Hit!");
+                //Debug.Log("Note Hit!");
                 return;
             }
         }
         if (all2DTracks[trackNum - 1].IsHolding())
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
-            Debug.Log("Miss!");
+            //Debug.Log("Miss!");
+        }
+    }
+
+    public void Hit3DNotes(int trackNum, Vector3 handPos)
+    {
+        foreach (Note3D note in note3Ds)
+        {
+            if (!note.WasHit() && note.GetTrackNum() == trackNum && note.HasSpawned() &&
+                (handPos - spawned3DNotes[note.GetSpawnIndex()].transform.position).magnitude < distance3DLeniency)
+            {
+                Destroy(spawned3DNotes[note.GetSpawnIndex()]);
+                note.Hit();
+                if (Mathf.Abs(curTime - note.GetTime()) < hitLeniency)
+                {
+                    Debug.Log("Note Hit!");
+                }
+                else
+                {
+                    Debug.Log("Bad Timing!");
+                }
+                return;
+            }
         }
     }
 }

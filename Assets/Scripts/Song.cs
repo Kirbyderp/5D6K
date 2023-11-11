@@ -52,22 +52,23 @@ public class Song
             int[] intsNeeded = new int[2] {int.Parse(line.Substring(0, 1)),
                                            int.Parse(line.Substring(2, 1)) };
             line = line.Substring(4);
-            float[] floatsNeeded = new float[4];
-            for (int j = 0; j < 4; j++)
+            float[] floatsNeeded = new float[7];
+            for (int j = 0; j < 7; j++)
             {
-                if (j < 3)
+                if (j < 6)
                 {
                     spaceIndex = line.IndexOf(" ");
-                    floatsNeeded[i] = float.Parse(line.Substring(0, spaceIndex));
+                    floatsNeeded[j] = float.Parse(line.Substring(0, spaceIndex));
                     line = line.Substring(spaceIndex + 1);
                 }
                 else
                 {
-                    floatsNeeded[i] = float.Parse(line);
+                    floatsNeeded[j] = float.Parse(line);
                 }
             }
             all3DNotes[i] = new Note3D(intsNeeded[0], intsNeeded[1], floatsNeeded[0],
-                            new Vector3(floatsNeeded[1], floatsNeeded[2], floatsNeeded[3]));
+                            new Vector3(floatsNeeded[1], floatsNeeded[2], floatsNeeded[3]),
+                            new Vector3(floatsNeeded[4], floatsNeeded[5], floatsNeeded[6]));
         }
     }
 

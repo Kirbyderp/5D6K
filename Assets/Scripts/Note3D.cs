@@ -6,21 +6,24 @@ public class Note3D
 {
     private int trackNum, type;
     private float time;
-    private Vector3 startingPos;
+    private Vector3 startingPos, hitPos;
     private bool hasSpawned, wasHit, wasMissed;
 
     private int spawnIndex;
 
-    public Note3D(int trackIn, int typeIn, float timeIn, Vector3 posIn)
+    public Note3D(int trackIn, int typeIn, float timeIn, Vector3 startPosIn, Vector3 hitPosIn)
     {
         trackNum = trackIn;
         time = timeIn;
         type = typeIn;
-        startingPos = posIn;
+        startingPos = startPosIn;
+        hitPos = hitPosIn;
         hasSpawned = false;
         wasHit = false;
         wasMissed = false;
+        //Debug.Log(this);
     }
+
     public Note3D()
     {
 
@@ -44,6 +47,11 @@ public class Note3D
     public Vector3 GetStartingPos()
     {
         return startingPos;
+    }
+
+    public Vector3 GetHitPos()
+    {
+        return hitPos;
     }
 
     public bool HasSpawned()
@@ -78,6 +86,6 @@ public class Note3D
 
     public override string ToString()
     {
-        return "Track " + trackNum + " at " + time + " seconds.";
+        return "Track " + trackNum + " at " + time + " seconds from position " + startingPos + " to " + hitPos + ".";
     }
 }
