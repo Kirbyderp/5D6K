@@ -52,10 +52,10 @@ public class Song
             int[] intsNeeded = new int[2] {int.Parse(line.Substring(0, 1)),
                                            int.Parse(line.Substring(2, 1)) };
             line = line.Substring(4);
-            float[] floatsNeeded = new float[7];
-            for (int j = 0; j < 7; j++)
+            float[] floatsNeeded = new float[3];
+            for (int j = 0; j < 3; j++)
             {
-                if (j < 6)
+                if (j < 2)
                 {
                     spaceIndex = line.IndexOf(" ");
                     floatsNeeded[j] = float.Parse(line.Substring(0, spaceIndex));
@@ -67,8 +67,8 @@ public class Song
                 }
             }
             all3DNotes[i] = new Note3D(intsNeeded[0], intsNeeded[1], floatsNeeded[0],
-                            new Vector3(floatsNeeded[1], floatsNeeded[2], floatsNeeded[3]),
-                            new Vector3(floatsNeeded[4], floatsNeeded[5], floatsNeeded[6]));
+                            new Vector3(-4, floatsNeeded[1], (intsNeeded[0] == 5 ? -1 : 1) * 1.4f),
+                            new Vector3(-.3048f, floatsNeeded[2], (intsNeeded[0] == 5 ? -1 : 1) * .6f));
         }
     }
 
@@ -80,6 +80,11 @@ public class Song
     public Note3D[] GetAll3DNotes()
     {
         return all3DNotes;
+    }
+
+    public float GetLength()
+    {
+        return length;
     }
 
     public float GetBeatLength()

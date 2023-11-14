@@ -9,7 +9,7 @@ public class SongManager : MonoBehaviour
     public static readonly string[] songPaths = { "Assets/Songs/TestSong.txt" };
     public static readonly string[] audioPaths = { "Audio/TestSong" };
     private Song curSong;
-    private bool isSongPlaying = false;
+    private bool readyToPlay = false, isSongPlaying = false;
     private float curTime;
     private int curSec = 0;
     private float hitLeniency = .15f, hit3DLeniency = .25f, distance3DLeniency = .381f;
@@ -18,7 +18,7 @@ public class SongManager : MonoBehaviour
     public GameObject[] note2DObjects, note3DObjects;
     private GameObject[] spawned2DNotes, spawned3DNotes;
     private int note2DSpawnIndex, note3DSpawnIndex;
-    private float spawn2DBeatsInAdvance = 2, spawn3DBeatsInAdvance = 3;
+    private float spawn2DBeatsInAdvance = 3, spawn3DBeatsInAdvance = 3;
     private Note2D[] note2Ds;
     private Note3D[] note3Ds;
     private AudioClip songAudio;
@@ -39,6 +39,8 @@ public class SongManager : MonoBehaviour
     //DEBUG VARS
     public GameObject[] outlines;
     //public GameObject leftHandSphere, rightHandSphere;
+    public TMPro.TextMeshProUGUI hits2D, hits3D;
+    public int hit2Dcount, hit3Dcount;
 
 
     // Start is called before the first frame update
@@ -270,8 +272,14 @@ public class SongManager : MonoBehaviour
                 }
             }
 
-            //Debug Stuff
+            if (curTime >= curSong.GetLength())
+            {
+                EndSong();
+            }
+
             curTime += deltaTime;
+
+            //Debug Stuff
             if (curTime - 1 > curSec)
             {
                 //Debug.Log(++curSec);
@@ -280,6 +288,9 @@ public class SongManager : MonoBehaviour
             {
                 //Debug.Log(curTime);
             }
+
+            hits2D.text = hit2Dcount + " / " + note2Ds.Length;
+            hits3D.text = hit3Dcount + " / " + note3Ds.Length;
         }
     }
 
@@ -300,12 +311,26 @@ public class SongManager : MonoBehaviour
         audioSource.Play();
         audioSource.Stop();
         audioSource.volume = curVol;
+
+        hit2Dcount = 0;
+        hit3Dcount = 0;
+
+        readyToPlay = true;
     }
 
     public void PlaySong()
     {
-        isSongPlaying = true;
-        audioSource.Play();
+        if (!isSongPlaying && readyToPlay)
+        {
+            isSongPlaying = true;
+            audioSource.Play();
+        }
+    }
+
+    public void EndSong()
+    {
+        isSongPlaying = false;
+        LoadSong(0);
     }
 
     public void HitTrack(int trackNum)
@@ -322,6 +347,7 @@ public class SongManager : MonoBehaviour
                     all2DTracks[note.GetTrackNum() - 1].SetIsHolding(true);
                 }
                 Debug.Log("Note Hit!");
+                hit2Dcount++;
                 return;
             }
         }
@@ -339,6 +365,7 @@ public class SongManager : MonoBehaviour
                 Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                 note.Hit();
                 all2DTracks[trackNum - 1].SetIsHolding(false);
+                hit2Dcount++;
                 //Debug.Log("Note Hit!");
                 return;
             }
@@ -346,6 +373,7 @@ public class SongManager : MonoBehaviour
         if (all2DTracks[trackNum - 1].IsHolding())
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
+            hit2Dcount--;
             //Debug.Log("Miss!");
         }
     }
@@ -361,7 +389,8 @@ public class SongManager : MonoBehaviour
                 note.Hit();
                 if (Mathf.Abs(curTime - note.GetTime()) < hitLeniency)
                 {
-                    Debug.Log("Note Hit!");
+                    Debug.Log("3d Note Hit!");
+                    hit3Dcount++;
                 }
                 else
                 {
