@@ -17,10 +17,11 @@ public class SongManager : MonoBehaviour
     private float hitLeniency = .15f, hit3DLeniency = .25f, distance3DLeniency = .381f;
     private Track2D[] all2DTracks;
     private Track3D[] all3DTracks;
-    public GameObject[] note2DObjects, note3DObjects;
+    public GameObject[] note2DObjects, note2DHolds, note3DObjects;
     private GameObject[] spawned2DNotes, spawned3DNotes;
     private int note2DSpawnIndex, note3DSpawnIndex;
-    private float spawn2DBeatsInAdvance = 3, spawn3DBeatsInAdvance = 3;
+    private List<GameObject>[] track2DHoldObjects;
+    private float spawn2DBeatsInAdvance = 3.5f, spawn3DBeatsInAdvance = 3;
     private Note2D[] note2Ds;
     private Note3D[] note3Ds;
     private AudioClip songAudio;
@@ -55,6 +56,7 @@ public class SongManager : MonoBehaviour
     private int songDiff = 0, songMode = 0;
 
     private bool twoDebug = true;
+    public Image colorTest;
 
     // Start is called before the first frame update
     void Start()
@@ -81,11 +83,13 @@ public class SongManager : MonoBehaviour
             StartCoroutine(Test());
         }
     }
+
     IEnumerator Test()
     {
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(2);
         PlaySong();
     }
+
     // Update is called once per frame
     void Update()
     {
@@ -122,8 +126,7 @@ public class SongManager : MonoBehaviour
                 foreach (Track2D track in all2DTracks)
                 {
                     track.MoveNotesDown(deltaTime / (curSong.GetBeatLength() * spawn2DBeatsInAdvance)
-                                        * (track.gameObject.GetComponent<RectTransform>().sizeDelta.y -
-                                        note2DObjects[0].GetComponent<RectTransform>().sizeDelta.y));
+                                        * (track.gameObject.GetComponent<RectTransform>().sizeDelta.y));
                 }
             }
 
@@ -263,14 +266,42 @@ public class SongManager : MonoBehaviour
                         Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                         note.Hit();
                         MissNote();
+                        if (note.GetNoteType() == 1)
+                        {
+                            track2DHoldObjects[note.GetTrackNum() - 1][0].GetComponent<Image>().color = new Color(.5f, .5f, .5f);
+                        }
+                        if (note.GetNoteType() == 2)
+                        {
+                            all2DTracks[note.GetTrackNum() - 1].SetIsHolding(false);
+                            GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
+                            track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
+                            Destroy(curHold);
+                        }
                         //Debug.Log("Despawned");
                     }
 
                     //Spawning Notes
                     if (!note.HasSpawned() && (curTime + spawn2DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
                     {
-                        spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetNoteType()],
-                                                                       all2DTracks[note.GetTrackNum() - 1].transform);
+                        if (note.GetNoteType() == 1)
+                        {
+                            Note2D endNote = FindHoldEnd(note);
+                            GameObject curHold = Instantiate(note2DHolds[note.GetTrackNum() - 1], all2DTracks[note.GetTrackNum() - 1].transform);
+                            spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetTrackNum() - 1],
+                                                                           all2DTracks[note.GetTrackNum() - 1].transform);
+                            float beatDif = (endNote.GetTime() - note.GetTime()) / curSong.GetBeatLength();
+                            curHold.GetComponent<RectTransform>().localPosition = new Vector3(curHold.GetComponent<RectTransform>().localPosition.x,
+                                                                                              spawned2DNotes[note2DSpawnIndex].GetComponent<RectTransform>().localPosition.y + beatDif / 2,
+                                                                                              curHold.GetComponent<RectTransform>().localPosition.z);
+                            curHold.GetComponent<RectTransform>().sizeDelta = new Vector2(curHold.GetComponent<RectTransform>().sizeDelta.x, beatDif);
+                            track2DHoldObjects[note.GetTrackNum() - 1].Add(curHold);
+                        }
+                        else
+                        {
+                            spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetTrackNum() - 1],
+                                                                           all2DTracks[note.GetTrackNum() - 1].transform);
+                        }
+                        
                         note.Spawn();
                         note.SetSpawnIndex(note2DSpawnIndex);
                         note2DSpawnIndex++;
@@ -338,6 +369,19 @@ public class SongManager : MonoBehaviour
         }
     }
 
+    private Note2D FindHoldEnd(Note2D startNote)
+    {
+        foreach (Note2D note in note2Ds)
+        {
+            if (note.GetTrackNum() == startNote.GetTrackNum() && note.GetNoteType() == 2 && !note.WasFound())
+            {
+                note.Find();
+                return note;
+            }
+        }
+        throw new System.Exception("Could not find end note.");
+    }
+
     public void LoadSong(int songIndex)
     {
         curSong = new Song(songPaths[songDiff, songIndex]);
@@ -348,6 +392,11 @@ public class SongManager : MonoBehaviour
         note3Ds = curSong.GetAll3DNotes();
         spawned2DNotes = new GameObject[curSong.GetAll2DNotes().Length];
         spawned3DNotes = new GameObject[curSong.GetAll3DNotes().Length];
+        track2DHoldObjects = new List<GameObject>[4];
+        for (int i = 0; i < 4; i++)
+        {
+            track2DHoldObjects[i] = new List<GameObject>();
+        }
         songAudio = Resources.Load<AudioClip>(audioPaths[songIndex]);
         audioSource.clip = songAudio;
         float curVol = audioSource.volume;
@@ -395,6 +444,12 @@ public class SongManager : MonoBehaviour
                 {
                     all2DTracks[note.GetTrackNum() - 1].SetIsHolding(true);
                 }
+                if (note.GetNoteType() == 2)
+                {
+                    GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
+                    track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
+                    Destroy(curHold);
+                }
                 Debug.Log("Note Hit!");
                 HitNote(note.GetTime());
                 hit2Dcount++;
@@ -418,6 +473,9 @@ public class SongManager : MonoBehaviour
                 HitNote(note.GetTime());
                 all2DTracks[trackNum - 1].SetIsHolding(false);
                 hit2Dcount++;
+                GameObject curHold = track2DHoldObjects[trackNum - 1][0];
+                track2DHoldObjects[trackNum - 1].RemoveAt(0);
+                Destroy(curHold);
                 //Debug.Log("Note Hit!");
                 return;
             }
@@ -426,6 +484,7 @@ public class SongManager : MonoBehaviour
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
             MissNote();
+            track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color = new Color(.5f, .5f, .5f);
             hit2Dcount--;
             //Debug.Log("Miss!");
         }

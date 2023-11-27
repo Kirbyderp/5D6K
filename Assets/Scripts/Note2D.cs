@@ -7,7 +7,7 @@ public class Note2D
     private int trackNum; //1-4
     private int type; //0: single hit, 1: hold start, 2: hold end
     private float time;
-    private bool hasSpawned, wasHit, wasMissed;
+    private bool hasSpawned, wasHit, wasMissed, wasFound;
 
     private int spawnIndex;
 
@@ -19,6 +19,7 @@ public class Note2D
         hasSpawned = false;
         wasHit = false;
         wasMissed = false;
+        wasFound = false;
     }
 
     public int GetTrackNum()
@@ -64,6 +65,16 @@ public class Note2D
     public void SetSpawnIndex(int index)
     {
         spawnIndex = index;
+    }
+
+    public bool WasFound()
+    {
+        return wasFound;
+    }
+
+    public void Find()
+    {
+        wasFound = true;
     }
 
     public override string ToString()
