@@ -24,12 +24,18 @@ public class Song
         while (line != "-----")
         {
             line = reader.ReadLine();
-            note2DCount++;
+            if (line != "")
+            {
+                note2DCount++;
+            }
         }
         while (line != "EOF")
         {
             line = reader.ReadLine();
-            note3DCount++;
+            if (line != "")
+            {
+                note3DCount++;
+            }
         }
 
         reader = new StreamReader(songPath);
@@ -40,6 +46,11 @@ public class Song
         for (int i = 0; i < note2DCount; i++)
         {
             line = reader.ReadLine();
+            if (line == "")
+            {
+                i--;
+                continue;
+            }
             all2DNotes[i] = new Note2D(int.Parse(line.Substring(0, 1)),
                                        int.Parse(line.Substring(2, 1)),
                                        float.Parse(line.Substring(4)));
@@ -49,6 +60,11 @@ public class Song
         for (int i = 0; i < note3DCount; i++)
         {
             line = reader.ReadLine();
+            if (line == "")
+            {
+                i--;
+                continue;
+            }
             int[] intsNeeded = new int[2] {int.Parse(line.Substring(0, 1)),
                                            int.Parse(line.Substring(2, 1)) };
             line = line.Substring(4);

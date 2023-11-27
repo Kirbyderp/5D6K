@@ -6,8 +6,10 @@ using UnityEngine.UI;
 
 public class SongManager : MonoBehaviour
 {
-    public static readonly string[] songPaths = { "Assets/Songs/TestSong.txt" };
-    public static readonly string[] audioPaths = { "Audio/TestSong" };
+    public static readonly string[,] songPaths = { { "Assets/Songs/Bowsers Dream Team Easy.txt", "Assets/Songs/TestSong.txt" },
+                                                   { "Assets/Songs/Bowsers Dream Team Medium.txt", "Assets/Songs/TestSong.txt" },
+                                                   { "Assets/Songs/Bowsers Dream Team Hard.txt", "Assets/Songs/TestSong.txt"} };
+    public static readonly string[] audioPaths = { "Audio/BowsersDreamTeam", "Audio/TestSong" };
     private Song curSong;
     private bool readyToPlay = false, isSongPlaying = false;
     private float curTime;
@@ -36,12 +38,23 @@ public class SongManager : MonoBehaviour
 
     public InputDevice leftHand, rightHand;
 
+    //Song Stat Vars
+    private int hit2Dcount, hit3Dcount;
+    private int curCombo, maxCombo;
+    private int numMisses;
+    private float accuracy;
+    private int accuracyWeight;
+
+
     //DEBUG VARS
     public GameObject[] outlines;
     //public GameObject leftHandSphere, rightHandSphere;
     public TMPro.TextMeshProUGUI hits2D, hits3D;
-    public int hit2Dcount, hit3Dcount;
 
+    //0 = Easy, Both; 1 = Medium, 2D Only; 2 = Hard, 3D Only
+    private int songDiff = 0, songMode = 0;
+
+    private bool twoDebug = true;
 
     // Start is called before the first frame update
     void Start()
@@ -60,8 +73,19 @@ public class SongManager : MonoBehaviour
             outlines[i] = GameObject.Find("Outline" + (i + 1));
             outlines[i].GetComponent<Image>().color = Color.red;
         }
-    }
 
+        if (twoDebug)
+        {
+            songDiff = 2;
+            LoadSong(0);
+            StartCoroutine(Test());
+        }
+    }
+    IEnumerator Test()
+    {
+        yield return new WaitForSeconds(5);
+        PlaySong();
+    }
     // Update is called once per frame
     void Update()
     {
@@ -92,94 +116,106 @@ public class SongManager : MonoBehaviour
             //Store the time that has advanced to keep it consistent throughout Update
             float deltaTime = Time.deltaTime;
 
-            //Move all spawned notes down
-            foreach (Track2D track in all2DTracks)
+            if (songMode != 2)
             {
-                track.MoveNotesDown(deltaTime / (curSong.GetBeatLength() * spawn2DBeatsInAdvance)
-                                    * (track.gameObject.GetComponent<RectTransform>().sizeDelta.y -
-                                    note2DObjects[0].GetComponent<RectTransform>().sizeDelta.y));
+                //Move all spawned notes down
+                foreach (Track2D track in all2DTracks)
+                {
+                    track.MoveNotesDown(deltaTime / (curSong.GetBeatLength() * spawn2DBeatsInAdvance)
+                                        * (track.gameObject.GetComponent<RectTransform>().sizeDelta.y -
+                                        note2DObjects[0].GetComponent<RectTransform>().sizeDelta.y));
+                }
             }
 
-            foreach (Track3D track in all3DTracks)
+            if (songMode != 1)
             {
-                track.MoveNotesForwards(deltaTime / (curSong.GetBeatLength() * spawn3DBeatsInAdvance), note3Ds);
+                foreach (Track3D track in all3DTracks)
+                {
+                    track.MoveNotesForwards(deltaTime / (curSong.GetBeatLength() * spawn3DBeatsInAdvance), note3Ds);
+                }
             }
 
-            //Check if user pressed or released any buttons down for 2D Notes
-            leftHand.TryGetFeatureValue(CommonUsages.gripButton, out bool curLGrip);
-            leftHand.TryGetFeatureValue(CommonUsages.triggerButton, out bool curLTrigger);
-            rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out bool curRTrigger);
-            rightHand.TryGetFeatureValue(CommonUsages.gripButton, out bool curRGrip);
+            if (songMode != 2)
+            {
+                //Check if user pressed or released any buttons down for 2D Notes
+                leftHand.TryGetFeatureValue(CommonUsages.gripButton, out bool curLGrip);
+                leftHand.TryGetFeatureValue(CommonUsages.triggerButton, out bool curLTrigger);
+                rightHand.TryGetFeatureValue(CommonUsages.triggerButton, out bool curRTrigger);
+                rightHand.TryGetFeatureValue(CommonUsages.gripButton, out bool curRGrip);
 
-            //Track 1
-            if (curLGrip == true && pressingLGrip == false)
-            {
-                HitTrack(1);
-                pressingLGrip = true;
-                outlines[0].GetComponent<Image>().color = Color.blue;
-            }
-            else if (curLGrip == false && pressingLGrip == true)
-            {
-                ReleaseTrack(1);
-                pressingLGrip = false;
-                outlines[0].GetComponent<Image>().color = Color.red;
+                //Track 1
+                if (curLGrip == true && pressingLGrip == false)
+                {
+                    HitTrack(1);
+                    pressingLGrip = true;
+                    outlines[0].GetComponent<Image>().color = Color.blue;
+                }
+                else if (curLGrip == false && pressingLGrip == true)
+                {
+                    ReleaseTrack(1);
+                    pressingLGrip = false;
+                    outlines[0].GetComponent<Image>().color = Color.red;
+                }
+
+                //Track 2
+                if (curLTrigger == true && pressingLTrigger == false)
+                {
+                    HitTrack(2);
+                    pressingLTrigger = true;
+                    outlines[1].GetComponent<Image>().color = Color.blue;
+                }
+                else if (curLTrigger == false && pressingLTrigger == true)
+                {
+                    ReleaseTrack(2);
+                    pressingLTrigger = false;
+                    outlines[1].GetComponent<Image>().color = Color.red;
+                }
+
+                //Track 3
+                if (curRTrigger == true && pressingRTrigger == false)
+                {
+                    HitTrack(3);
+                    pressingRTrigger = true;
+                    outlines[2].GetComponent<Image>().color = Color.blue;
+                }
+                else if (curRTrigger == false && pressingRTrigger == true)
+                {
+                    ReleaseTrack(3);
+                    pressingRTrigger = false;
+                    outlines[2].GetComponent<Image>().color = Color.red;
+                }
+
+                //Track 4
+                if (curRGrip == true && pressingRGrip == false)
+                {
+                    HitTrack(4);
+                    pressingRGrip = true;
+                    outlines[3].GetComponent<Image>().color = Color.blue;
+                }
+                else if (curRGrip == false && pressingRGrip == true)
+                {
+                    ReleaseTrack(4);
+                    pressingRGrip = false;
+                    outlines[3].GetComponent<Image>().color = Color.red;
+                }
             }
 
-            //Track 2
-            if (curLTrigger == true && pressingLTrigger == false)
+            if (songMode != 1)
             {
-                HitTrack(2);
-                pressingLTrigger = true;
-                outlines[1].GetComponent<Image>().color = Color.blue;
-            }
-            else if (curLTrigger == false && pressingLTrigger == true)
-            {
-                ReleaseTrack(2);
-                pressingLTrigger = false;
-                outlines[1].GetComponent<Image>().color = Color.red;
-            }
+                //Check where the user's hands are for 3D notes
+                leftHand.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 leftHandPos);
+                rightHand.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 rightHandPos);
+                //leftHandSphere.transform.position = new Vector3(-leftHandPos.z, leftHandPos.y, leftHandPos.x);
+                //rightHandSphere.transform.position = new Vector3(-rightHandPos.z, rightHandPos.y, rightHandPos.x);
+                Vector3 leftHandPosFixed = new Vector3(-leftHandPos.z, leftHandPos.y, leftHandPos.x);
+                Vector3 rightHandPosFixed = new Vector3(-rightHandPos.z, rightHandPos.y, rightHandPos.x);
 
-            //Track 3
-            if (curRTrigger == true && pressingRTrigger == false)
-            {
-                HitTrack(3);
-                pressingRTrigger = true;
-                outlines[2].GetComponent<Image>().color = Color.blue;
-            }
-            else if (curRTrigger == false && pressingRTrigger == true)
-            {
-                ReleaseTrack(3);
-                pressingRTrigger = false;
-                outlines[2].GetComponent<Image>().color = Color.red;
-            }
+                //Track 5
+                Hit3DNotes(5, leftHandPosFixed);
 
-            //Track 4
-            if (curRGrip == true && pressingRGrip == false)
-            {
-                HitTrack(4);
-                pressingRGrip = true;
-                outlines[3].GetComponent<Image>().color = Color.blue;
+                //Track 6
+                Hit3DNotes(6, rightHandPosFixed);
             }
-            else if (curRGrip == false && pressingRGrip == true)
-            {
-                ReleaseTrack(4);
-                pressingRGrip = false;
-                outlines[3].GetComponent<Image>().color = Color.red;
-            }
-
-            //Check where the user's hands are for 3D notes
-            leftHand.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 leftHandPos);
-            rightHand.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 rightHandPos);
-            //leftHandSphere.transform.position = new Vector3(-leftHandPos.z, leftHandPos.y, leftHandPos.x);
-            //rightHandSphere.transform.position = new Vector3(-rightHandPos.z, rightHandPos.y, rightHandPos.x);
-            Vector3 leftHandPosFixed = new Vector3(-leftHandPos.z, leftHandPos.y, leftHandPos.x);
-            Vector3 rightHandPosFixed = new Vector3(-rightHandPos.z, rightHandPos.y, rightHandPos.x);
-
-            //Track 5
-            Hit3DNotes(5, leftHandPosFixed);
-
-            //Track 6
-            Hit3DNotes(6, rightHandPosFixed);
 
             //DEBUG KEYBOARD 2D INPUTS
             if (Input.GetKeyDown(track1Hit))
@@ -216,59 +252,67 @@ public class SongManager : MonoBehaviour
                 ReleaseTrack(4);
             }
 
-            //Spawn and despawn 2D notes based on the time that has elapsed
-            foreach (Note2D note in note2Ds)
+            if (songMode != 2)
             {
-                //Despawning Notes
-                if (!note.WasHit() && (curTime - hitLeniency) > note.GetTime())
+                //Spawn and despawn 2D notes based on the time that has elapsed
+                foreach (Note2D note in note2Ds)
                 {
-                    Destroy(spawned2DNotes[note.GetSpawnIndex()]);
-                    note.Hit();
-                    //Debug.Log("Despawned");
-                }
+                    //Despawning Notes
+                    if (!note.WasHit() && (curTime - hitLeniency) > note.GetTime())
+                    {
+                        Destroy(spawned2DNotes[note.GetSpawnIndex()]);
+                        note.Hit();
+                        MissNote();
+                        //Debug.Log("Despawned");
+                    }
 
-                //Spawning Notes
-                if (!note.HasSpawned() && (curTime + spawn2DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
-                {
-                    spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetNoteType()],
-                                                                   all2DTracks[note.GetTrackNum() - 1].transform);
-                    note.Spawn();
-                    note.SetSpawnIndex(note2DSpawnIndex);
-                    note2DSpawnIndex++;
-                    //Debug.Log("Spawned");
-                }
-                else if (!note.HasSpawned())
-                {
-                    break;
+                    //Spawning Notes
+                    if (!note.HasSpawned() && (curTime + spawn2DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
+                    {
+                        spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetNoteType()],
+                                                                       all2DTracks[note.GetTrackNum() - 1].transform);
+                        note.Spawn();
+                        note.SetSpawnIndex(note2DSpawnIndex);
+                        note2DSpawnIndex++;
+                        //Debug.Log("Spawned");
+                    }
+                    else if (!note.HasSpawned())
+                    {
+                        break;
+                    }
                 }
             }
 
-            //Spawn and despawn 3D notes based on the time that has elapsed
-            foreach (Note3D note in note3Ds)
+            if (songMode != 1)
             {
-                //Despawning Notes
-                if (!note.WasHit() && (curTime - hit3DLeniency) > note.GetTime())
+                //Spawn and despawn 3D notes based on the time that has elapsed
+                foreach (Note3D note in note3Ds)
                 {
-                    Destroy(spawned3DNotes[note.GetSpawnIndex()]);
-                    note.Hit();
-                    Debug.Log("Despawned");
-                }
+                    //Despawning Notes
+                    if (!note.WasHit() && (curTime - hit3DLeniency) > note.GetTime())
+                    {
+                        Destroy(spawned3DNotes[note.GetSpawnIndex()]);
+                        note.Hit();
+                        MissNote();
+                        //Debug.Log("Despawned");
+                    }
 
-                //Spawning Notes
-                if (!note.HasSpawned() && (curTime + spawn3DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
-                {
-                    spawned3DNotes[note3DSpawnIndex] = Instantiate(note3DObjects[note.GetNoteType()],
-                                                                   note.GetStartingPos(), Quaternion.identity,
-                                                                   all3DTracks[note.GetTrackNum() - 5].transform);
-                    note.Spawn();
-                    note.SetSpawnIndex(note3DSpawnIndex);
-                    spawned3DNotes[note3DSpawnIndex].GetComponent<Note3DID>().SetNoteID(note3DSpawnIndex);
-                    note3DSpawnIndex++;
-                    //Debug.Log("Spawned");
-                }
-                else if (!note.HasSpawned())
-                {
-                    break;
+                    //Spawning Notes
+                    if (!note.HasSpawned() && (curTime + spawn3DBeatsInAdvance * curSong.GetBeatLength()) > note.GetTime())
+                    {
+                        spawned3DNotes[note3DSpawnIndex] = Instantiate(note3DObjects[note.GetNoteType()],
+                                                                       note.GetStartingPos(), Quaternion.identity,
+                                                                       all3DTracks[note.GetTrackNum() - 5].transform);
+                        note.Spawn();
+                        note.SetSpawnIndex(note3DSpawnIndex);
+                        spawned3DNotes[note3DSpawnIndex].GetComponent<Note3DID>().SetNoteID(note3DSpawnIndex);
+                        note3DSpawnIndex++;
+                        //Debug.Log("Spawned");
+                    }
+                    else if (!note.HasSpawned())
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -296,7 +340,7 @@ public class SongManager : MonoBehaviour
 
     public void LoadSong(int songIndex)
     {
-        curSong = new Song(songPaths[songIndex]);
+        curSong = new Song(songPaths[songDiff, songIndex]);
         curTime = 0;
         note2DSpawnIndex = 0;
         note3DSpawnIndex = 0;
@@ -314,6 +358,11 @@ public class SongManager : MonoBehaviour
 
         hit2Dcount = 0;
         hit3Dcount = 0;
+        curCombo = 0;
+        maxCombo = 0;
+        numMisses = 0;
+        accuracy = 0;
+        accuracyWeight = 0;
 
         readyToPlay = true;
     }
@@ -347,10 +396,12 @@ public class SongManager : MonoBehaviour
                     all2DTracks[note.GetTrackNum() - 1].SetIsHolding(true);
                 }
                 Debug.Log("Note Hit!");
+                HitNote(note.GetTime());
                 hit2Dcount++;
                 return;
             }
         }
+        MissNote();
         Debug.Log("Miss!");
     }
 
@@ -364,6 +415,7 @@ public class SongManager : MonoBehaviour
             {
                 Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                 note.Hit();
+                HitNote(note.GetTime());
                 all2DTracks[trackNum - 1].SetIsHolding(false);
                 hit2Dcount++;
                 //Debug.Log("Note Hit!");
@@ -373,6 +425,7 @@ public class SongManager : MonoBehaviour
         if (all2DTracks[trackNum - 1].IsHolding())
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
+            MissNote();
             hit2Dcount--;
             //Debug.Log("Miss!");
         }
@@ -389,15 +442,91 @@ public class SongManager : MonoBehaviour
                 note.Hit();
                 if (Mathf.Abs(curTime - note.GetTime()) < hitLeniency)
                 {
-                    Debug.Log("3d Note Hit!");
+                    //Debug.Log("3d Note Hit!");
+                    HitNote(note.GetTime());
                     hit3Dcount++;
                 }
                 else
                 {
-                    Debug.Log("Bad Timing!");
+                    //Debug.Log("Bad Timing!");
+                    MissNote();
                 }
                 return;
             }
+        }
+    }
+
+    private void HitNote(float noteHitTime)
+    {
+        curCombo++;
+        if (curCombo > maxCombo)
+        {
+            maxCombo = curCombo;
+        }
+        //Note hit at the perfect time has an accuracy of 100%
+        //Note hit at the worst possible time that still hits it has an accuracy of 60%
+        accuracy = (accuracy * accuracyWeight +
+                   .4f * (1 - Mathf.Abs(curTime - noteHitTime)) / hitLeniency + .6f)
+                   / (accuracyWeight + 1);
+        accuracyWeight++;
+    }
+
+    private void MissNote()
+    {
+        curCombo = 0;
+        numMisses++;
+        accuracy = (accuracy * accuracyWeight) / (accuracyWeight + 1);
+        accuracyWeight++;
+    }
+
+    public void SetDiffEasy()
+    {
+        if (!isSongPlaying)
+        {
+            songDiff = 0;
+            LoadSong(0);
+        }
+    }
+
+    public void SetDiffMedium()
+    {
+        if (!isSongPlaying)
+        {
+            songDiff = 1;
+            LoadSong(0);
+        }
+    }
+
+    public void SetDiffHard()
+    {
+        if (!isSongPlaying)
+        {
+            songDiff = 2;
+            LoadSong(0);
+        }
+    }
+
+    public void SetModeBoth()
+    {
+        if (!isSongPlaying)
+        {
+            songMode = 0;
+        }
+    }
+
+    public void SetMode2D()
+    {
+        if (!isSongPlaying)
+        {
+            songMode = 1;
+        }
+    }
+
+    public void SetMode3D()
+    {
+        if (!isSongPlaying)
+        {
+            songMode = 2;
         }
     }
 }
