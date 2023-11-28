@@ -55,7 +55,7 @@ public class SongManager : MonoBehaviour
     //0 = Easy, Both; 1 = Medium, 2D Only; 2 = Hard, 3D Only
     private int songDiff = 0, songMode = 0;
 
-    private bool twoDebug = false;
+    private bool twoDebug = true;
     public Image colorTest;
 
     // Start is called before the first frame update
@@ -268,14 +268,22 @@ public class SongManager : MonoBehaviour
                         MissNote();
                         if (note.GetNoteType() == 1)
                         {
-                            track2DHoldObjects[note.GetTrackNum() - 1][0].GetComponent<Image>().color = new Color(.5f, .5f, .5f);
+                            if (track2DHoldObjects[note.GetTrackNum() - 1].Count > 0)
+                            {
+                                track2DHoldObjects[note.GetTrackNum() - 1][0].GetComponent<Image>().color = new Color(track2DHoldObjects[note.GetTrackNum() - 1][0].GetComponent<Image>().color.r / 2,
+                                                                                                                      track2DHoldObjects[note.GetTrackNum() - 1][0].GetComponent<Image>().color.g / 2,
+                                                                                                                      track2DHoldObjects[note.GetTrackNum() - 1][0].GetComponent<Image>().color.b / 2);
+                            }
                         }
                         if (note.GetNoteType() == 2)
                         {
                             all2DTracks[note.GetTrackNum() - 1].SetIsHolding(false);
-                            GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
-                            track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
-                            Destroy(curHold);
+                            if (track2DHoldObjects[note.GetTrackNum() - 1].Count > 0)
+                            {
+                                GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
+                                track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
+                                Destroy(curHold);
+                            }
                         }
                         //Debug.Log("Despawned");
                     }
@@ -289,17 +297,29 @@ public class SongManager : MonoBehaviour
                             GameObject curHold = Instantiate(note2DHolds[note.GetTrackNum() - 1], all2DTracks[note.GetTrackNum() - 1].transform);
                             spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetTrackNum() - 1],
                                                                            all2DTracks[note.GetTrackNum() - 1].transform);
+                            GameObject dispNoteChild = spawned2DNotes[note2DSpawnIndex].transform.GetChild(0).gameObject;
+                            dispNoteChild.GetComponent<Image>().color = new Color(PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " R"),
+                                                                                  PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " G"),
+                                                                                  PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " B"));
                             float beatDif = (endNote.GetTime() - note.GetTime()) / curSong.GetBeatLength();
                             curHold.GetComponent<RectTransform>().localPosition = new Vector3(curHold.GetComponent<RectTransform>().localPosition.x,
                                                                                               spawned2DNotes[note2DSpawnIndex].GetComponent<RectTransform>().localPosition.y + beatDif / 2,
                                                                                               curHold.GetComponent<RectTransform>().localPosition.z);
                             curHold.GetComponent<RectTransform>().sizeDelta = new Vector2(curHold.GetComponent<RectTransform>().sizeDelta.x, beatDif);
+                            curHold.GetComponent<Image>().color = new Color(PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " R"),
+                                                                            PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " G"),
+                                                                            PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " B"));
+                            Debug.Log("Adding track " + note.GetTrackNum());
                             track2DHoldObjects[note.GetTrackNum() - 1].Add(curHold);
                         }
                         else
                         {
                             spawned2DNotes[note2DSpawnIndex] = Instantiate(note2DObjects[note.GetTrackNum() - 1],
                                                                            all2DTracks[note.GetTrackNum() - 1].transform);
+                            GameObject dispNoteChild = spawned2DNotes[note2DSpawnIndex].transform.GetChild(0).gameObject;
+                            dispNoteChild.GetComponent<Image>().color = new Color(PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " R"),
+                                                                                  PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " G"),
+                                                                                  PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " B"));
                         }
                         
                         note.Spawn();
@@ -334,6 +354,9 @@ public class SongManager : MonoBehaviour
                         spawned3DNotes[note3DSpawnIndex] = Instantiate(note3DObjects[note.GetNoteType()],
                                                                        note.GetStartingPos(), Quaternion.identity,
                                                                        all3DTracks[note.GetTrackNum() - 5].transform);
+                        /*spawned3DNotes[note3DSpawnIndex].GetComponent<Image>().color = new Color(PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " R"),
+                                                                                                 PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " G"),
+                                                                                                 PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " B"));*/
                         note.Spawn();
                         note.SetSpawnIndex(note3DSpawnIndex);
                         spawned3DNotes[note3DSpawnIndex].GetComponent<Note3DID>().SetNoteID(note3DSpawnIndex);
@@ -446,17 +469,21 @@ public class SongManager : MonoBehaviour
                 }
                 if (note.GetNoteType() == 2)
                 {
-                    GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
-                    track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
-                    Destroy(curHold);
+                    if (track2DHoldObjects[note.GetTrackNum() - 1].Count > 0)
+                    {
+                        GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
+                        Debug.Log("Removing track " + trackNum + " due to hit");
+                        track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
+                        Destroy(curHold);
+                    }
                 }
-                Debug.Log("Note Hit!");
+                //Debug.Log("Note Hit!");
                 HitNote(note.GetTime());
                 hit2Dcount++;
                 return;
             }
         }
-        MissNote();
+        //MissNote();
         Debug.Log("Miss!");
     }
 
@@ -473,9 +500,12 @@ public class SongManager : MonoBehaviour
                 HitNote(note.GetTime());
                 all2DTracks[trackNum - 1].SetIsHolding(false);
                 hit2Dcount++;
-                GameObject curHold = track2DHoldObjects[trackNum - 1][0];
-                track2DHoldObjects[trackNum - 1].RemoveAt(0);
-                Destroy(curHold);
+                if (track2DHoldObjects[trackNum - 1].Count > 0)
+                {
+                    GameObject curHold = track2DHoldObjects[trackNum - 1][0];
+                    track2DHoldObjects[trackNum - 1].RemoveAt(0);
+                    Destroy(curHold);
+                }
                 //Debug.Log("Note Hit!");
                 return;
             }
@@ -484,7 +514,13 @@ public class SongManager : MonoBehaviour
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
             MissNote();
-            track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color = new Color(.5f, .5f, .5f);
+            Debug.Log("Changing Color at " + trackNum);
+            if (track2DHoldObjects[trackNum - 1].Count > 0)
+            {
+                track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color = new Color(track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color.r / 2,
+                                                                                            track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color.g / 2,
+                                                                                            track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color.b / 2);
+            }
             hit2Dcount--;
             //Debug.Log("Miss!");
         }
