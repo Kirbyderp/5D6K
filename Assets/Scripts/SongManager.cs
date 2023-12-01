@@ -55,7 +55,7 @@ public class SongManager : MonoBehaviour
     //0 = Easy, Both; 1 = Medium, 2D Only; 2 = Hard, 3D Only
     private int songDiff = 0, songMode = 0;
 
-    private bool twoDebug = true;
+    private bool twoDebug = false;
     public Image colorTest;
 
     // Start is called before the first frame update
