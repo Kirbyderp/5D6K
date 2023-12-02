@@ -6,12 +6,13 @@ using UnityEngine.UI;
 
 public class SongManager : MonoBehaviour
 {
-    public static readonly string[,] songPaths = { { "Assets/Songs/Bowsers Dream Team Easy.txt", "Assets/Songs/TestSong.txt" },
-                                                   { "Assets/Songs/Bowsers Dream Team Medium.txt", "Assets/Songs/TestSong.txt" },
-                                                   { "Assets/Songs/Bowsers Dream Team Hard.txt", "Assets/Songs/TestSong.txt"} };
-    public static readonly string[] audioPaths = { "Audio/BowsersDreamTeam", "Audio/TestSong" };
+    public static readonly string[,] songPaths = { { "Assets/Songs/Bowsers Dream Team Easy.txt", "Assets/Songs/Lavender Cemetery Easy.txt", "Assets/Songs/TestSong.txt" },
+                                                   { "Assets/Songs/Bowsers Dream Team Medium.txt", "Assets/Songs/Lavender Cemetery Medium.txt", "Assets/Songs/TestSong.txt" },
+                                                   { "Assets/Songs/Bowsers Dream Team Hard.txt", "Assets/Songs/Lavender Cemetery Hard.txt", "Assets/Songs/TestSong.txt"} };
+    public static readonly string[] audioPaths = { "Audio/BowsersDreamTeam", "Audio/LavenderCemetery", "Audio/TestSong" };
     private Song curSong;
-    private bool readyToPlay = false, isSongPlaying = false;
+    private int curSongIndex = 1;
+    private bool readyToPlay = false, isSongPlaying = false, isSongPaused = false, tutPause = false;
     private float curTime;
     private int curSec = 0;
     private float hitLeniency = .15f, hit3DLeniency = .25f, distance3DLeniency = .381f;
@@ -62,7 +63,7 @@ public class SongManager : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        LoadSong(0);
+        LoadSong(curSongIndex);
         all2DTracks = new Track2D[4] { GameObject.Find("Track2D1").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D2").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D3").GetComponent<Track2D>(),
@@ -78,8 +79,8 @@ public class SongManager : MonoBehaviour
 
         if (twoDebug)
         {
-            songDiff = 2;
-            LoadSong(0);
+            songDiff = 0;
+            LoadSong(curSongIndex);
             StartCoroutine(Test());
         }
     }
@@ -115,7 +116,7 @@ public class SongManager : MonoBehaviour
             }
         }
 
-        if (isSongPlaying)
+        if (isSongPlaying && !isSongPaused && !tutPause)
         {
             //Store the time that has advanced to keep it consistent throughout Update
             float deltaTime = Time.deltaTime;
@@ -309,7 +310,6 @@ public class SongManager : MonoBehaviour
                             curHold.GetComponent<Image>().color = new Color(PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " R"),
                                                                             PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " G"),
                                                                             PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " B"));
-                            Debug.Log("Adding track " + note.GetTrackNum());
                             track2DHoldObjects[note.GetTrackNum() - 1].Add(curHold);
                         }
                         else
@@ -451,7 +451,8 @@ public class SongManager : MonoBehaviour
     public void EndSong()
     {
         isSongPlaying = false;
-        LoadSong(0);
+        audioSource.Stop();
+        LoadSong(curSongIndex);
     }
 
     public void HitTrack(int trackNum)
@@ -472,7 +473,6 @@ public class SongManager : MonoBehaviour
                     if (track2DHoldObjects[note.GetTrackNum() - 1].Count > 0)
                     {
                         GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
-                        Debug.Log("Removing track " + trackNum + " due to hit");
                         track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
                         Destroy(curHold);
                     }
@@ -483,8 +483,8 @@ public class SongManager : MonoBehaviour
                 return;
             }
         }
-        //MissNote();
-        Debug.Log("Miss!");
+        MissNote();
+        //Debug.Log("Miss!");
     }
 
     public void ReleaseTrack(int trackNum)
@@ -514,7 +514,6 @@ public class SongManager : MonoBehaviour
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
             MissNote();
-            Debug.Log("Changing Color at " + trackNum);
             if (track2DHoldObjects[trackNum - 1].Count > 0)
             {
                 track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color = new Color(track2DHoldObjects[trackNum - 1][0].GetComponent<Image>().color.r / 2,
@@ -579,7 +578,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songDiff = 0;
-            LoadSong(0);
+            LoadSong(curSongIndex);
         }
     }
 
@@ -588,7 +587,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songDiff = 1;
-            LoadSong(0);
+            LoadSong(curSongIndex);
         }
     }
 
@@ -597,7 +596,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songDiff = 2;
-            LoadSong(0);
+            LoadSong(curSongIndex);
         }
     }
 

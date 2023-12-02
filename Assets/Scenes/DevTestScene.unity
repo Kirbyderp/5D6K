@@ -524,7 +524,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 5
+  m_text: L
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1625,6 +1625,11 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     m_Variable: {fileID: 0}
+--- !u!23 &140647228 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 4467953644552072320, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
+  m_PrefabInstance: {fileID: 1825262782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &143237140
 GameObject:
   m_ObjectHideFlags: 0
@@ -2916,6 +2921,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 226862049}
   m_CullTransparentMesh: 1
+--- !u!1 &232379422 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2871854917430088273, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
+  m_PrefabInstance: {fileID: 1825262782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &237400192
 GameObject:
   m_ObjectHideFlags: 0
@@ -4070,6 +4080,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 277120170}
   m_CullTransparentMesh: 1
+--- !u!1 &286525175 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2871854915827847854, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
+  m_PrefabInstance: {fileID: 1825262782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &295595497 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -4618025148844850862, guid: af3a609f3b06600409a356f4e8ba91ba, type: 3}
@@ -4097,6 +4112,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 787248139368534317, guid: af3a609f3b06600409a356f4e8ba91ba, type: 3}
+--- !u!23 &322651526 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 2292724744706231922, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
+  m_PrefabInstance: {fileID: 1825262782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &329674977
 GameObject:
   m_ObjectHideFlags: 0
@@ -14345,6 +14365,11 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3, y: 0.6, z: 0.2}
   m_Center: {x: 0.000000059604645, y: -0.0000004824251, z: -0.000000009313229}
+--- !u!23 &974681820 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 2498088101131738265, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
+  m_PrefabInstance: {fileID: 1825262782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &976442729
 GameObject:
   m_ObjectHideFlags: 0
@@ -17604,6 +17629,19 @@ MonoBehaviour:
   - {fileID: 1420786924}
   - {fileID: 398631014}
   - {fileID: 1800402463}
+  controllerButtons:
+  - {fileID: 1447192348}
+  - {fileID: 140647228}
+  - {fileID: 974681820}
+  - {fileID: 322651526}
+  controllerButtonMats:
+  - {fileID: 2100000, guid: 25bd9269bd015cc4fbc7ad2f4061277a, type: 2}
+  - {fileID: 2100000, guid: 1eb50a6994fb8914c80ed2dd80071b87, type: 2}
+  - {fileID: 2100000, guid: 55afa327822fa304092af36bcc4a328c, type: 2}
+  - {fileID: 2100000, guid: eb16cd334536f554ca16c79e5d7375dd, type: 2}
+  controllers:
+  - {fileID: 232379422}
+  - {fileID: 286525175}
 --- !u!1 &1185129091
 GameObject:
   m_ObjectHideFlags: 0
@@ -20934,6 +20972,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b7ba04adc738e4b4ebe67344f7d66061, type: 3}
+--- !u!23 &1447192348 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 250729112309661291, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
+  m_PrefabInstance: {fileID: 1825262782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1451002449
 GameObject:
   m_ObjectHideFlags: 0
@@ -23464,9 +23507,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '6
-
-'
+  m_text: R
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -25685,7 +25726,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 4.33e-43, y: 7.1e-44, z: 0, w: 1.3296257e+32}
+  m_BoundingSphereOverride: {x: 6.94e-43, y: 1.61e-43, z: 0, w: 1.0777421e+32}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0

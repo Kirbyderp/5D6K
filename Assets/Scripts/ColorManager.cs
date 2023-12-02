@@ -9,10 +9,15 @@ public class ColorManager : MonoBehaviour
     private Vector3 tempColor;
     public Image previewNote;
     public Image[] trackButtons;
+    public MeshRenderer[] controllerButtons;
+    public Material[] controllerButtonMats;
+    public GameObject[] controllers;
     
     // Start is called before the first frame update
     void Start()
     {
+        controllers[0].SetActive(true);
+        controllers[1].SetActive(true);
         for (int i = 1; i <= 6; i++)
         {
             if (!PlayerPrefs.HasKey("Track " + i + " R"))
@@ -24,6 +29,13 @@ public class ColorManager : MonoBehaviour
             trackButtons[i - 1].color = new Color(PlayerPrefs.GetFloat("Track " + i + " R"),
                                                   PlayerPrefs.GetFloat("Track " + i + " G"),
                                                   PlayerPrefs.GetFloat("Track " + i + " B"));
+            if (i < 5)
+            {
+                controllerButtonMats[i - 1].color = new Color(PlayerPrefs.GetFloat("Track " + i + " R"),
+                                                              PlayerPrefs.GetFloat("Track " + i + " G"),
+                                                              PlayerPrefs.GetFloat("Track " + i + " B"));
+                controllerButtons[i - 1].material = controllerButtonMats[i - 1];
+            }
         }
         curTrack = 1;
         tempColor = new Vector3(PlayerPrefs.GetFloat("Track 1 R"),
