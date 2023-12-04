@@ -15,7 +15,7 @@ public class SongManager : MonoBehaviour
     private bool readyToPlay = false, isSongPlaying = false, isSongPaused = false, tutPause = false;
     private float curTime;
     private int curSec = 0;
-    private float hitLeniency = .15f, hit3DLeniency = .25f, distance3DLeniency = .381f;
+    private float hitLeniency = .15f, hit3DLeniency = .25f, distance3DLeniency = .331f;
     private Track2D[] all2DTracks;
     private Track3D[] all3DTracks;
     public GameObject[] note2DObjects, note2DHolds, note3DObjects;
@@ -27,6 +27,7 @@ public class SongManager : MonoBehaviour
     private Note3D[] note3Ds;
     private AudioClip songAudio;
     private AudioSource audioSource;
+    private ColorManager colorManager;
 
     private bool pressingLGrip = false;
     private bool pressingLTrigger = false;
@@ -76,6 +77,7 @@ public class SongManager : MonoBehaviour
             outlines[i] = GameObject.Find("Outline" + (i + 1));
             outlines[i].GetComponent<Image>().color = Color.red;
         }
+        colorManager = GameObject.Find("Color Canvas").GetComponent<ColorManager>();
 
         if (twoDebug)
         {
@@ -354,9 +356,14 @@ public class SongManager : MonoBehaviour
                         spawned3DNotes[note3DSpawnIndex] = Instantiate(note3DObjects[note.GetNoteType()],
                                                                        note.GetStartingPos(), Quaternion.identity,
                                                                        all3DTracks[note.GetTrackNum() - 5].transform);
-                        /*spawned3DNotes[note3DSpawnIndex].GetComponent<Image>().color = new Color(PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " R"),
-                                                                                                 PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " G"),
-                                                                                                 PlayerPrefs.GetFloat("Track " + note.GetTrackNum() + " B"));*/
+                        if (note.GetTrackNum() == 5)
+                        {
+                            spawned3DNotes[note3DSpawnIndex].GetComponent<MeshRenderer>().material = colorManager.GetLeft3DMat();
+                        }
+                        else
+                        {
+                            spawned3DNotes[note3DSpawnIndex].GetComponent<MeshRenderer>().material = colorManager.GetRight3DMat();
+                        }
                         note.Spawn();
                         note.SetSpawnIndex(note3DSpawnIndex);
                         spawned3DNotes[note3DSpawnIndex].GetComponent<Note3DID>().SetNoteID(note3DSpawnIndex);
@@ -542,7 +549,7 @@ public class SongManager : MonoBehaviour
                 }
                 else
                 {
-                    //Debug.Log("Bad Timing!");
+                    Debug.Log("Bad Timing!");
                     MissNote();
                 }
                 return;

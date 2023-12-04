@@ -7,11 +7,13 @@ public class ColorManager : MonoBehaviour
 {
     private int curTrack = 1;
     private Vector3 tempColor;
-    public Image previewNote;
+    public Image previewNote2D;
     public Image[] trackButtons;
     public MeshRenderer[] controllerButtons;
     public Material[] controllerButtonMats;
     public GameObject[] controllers;
+    public Material[] note3DMats;
+    public GameObject previewNote3D;
     
     // Start is called before the first frame update
     void Start()
@@ -41,6 +43,10 @@ public class ColorManager : MonoBehaviour
         tempColor = new Vector3(PlayerPrefs.GetFloat("Track 1 R"),
                                 PlayerPrefs.GetFloat("Track 1 G"),
                                 PlayerPrefs.GetFloat("Track 1 B"));
+        note3DMats[0].color = new Color(tempColor.x, tempColor.y, tempColor.z);
+        previewNote3D.SetActive(false);
+        note3DMats[1].color = trackButtons[4].color;
+        note3DMats[2].color = trackButtons[5].color;
         UpdatePreview(tempColor);
     }
 
@@ -52,12 +58,37 @@ public class ColorManager : MonoBehaviour
 
     public void ChangeCurTrack(int trackNum)
     {
-        curTrack = trackNum;
+        if (curTrack < 5 && trackNum >= 5)
+        {
+            previewNote3D.SetActive(true);
+            previewNote2D.transform.parent.gameObject.SetActive(false);
+            curTrack = trackNum;
+            UpdatePreview(tempColor);
+        }
+        else if (curTrack > 4 && trackNum <= 4)
+        {
+            previewNote2D.transform.parent.gameObject.SetActive(true);
+            previewNote3D.SetActive(false);
+            curTrack = trackNum;
+            UpdatePreview(tempColor);
+        }
+        else
+        {
+            curTrack = trackNum;
+        }
+        
     }
 
     public void UpdatePreview(Vector3 colorIn)
     {
-        previewNote.color = new Color(colorIn.x, colorIn.y, colorIn.z);
+        if (curTrack < 5)
+        {
+            previewNote2D.color = new Color(colorIn.x, colorIn.y, colorIn.z);
+        }
+        else
+        {
+            note3DMats[0].color = new Color(colorIn.x, colorIn.y, colorIn.z);
+        }
     }
 
     public void ApplyColor()
@@ -68,6 +99,18 @@ public class ColorManager : MonoBehaviour
         trackButtons[curTrack - 1].color = new Color(PlayerPrefs.GetFloat("Track " + curTrack + " R"),
                                                      PlayerPrefs.GetFloat("Track " + curTrack + " G"),
                                                      PlayerPrefs.GetFloat("Track " + curTrack + " B"));
+        if (curTrack == 5)
+        {
+            note3DMats[1].color = trackButtons[4].color;
+        }
+        else if (curTrack == 6)
+        {
+            note3DMats[2].color = trackButtons[5].color;
+        }
+        else
+        {
+            controllerButtonMats[curTrack - 1].color = trackButtons[curTrack - 1].color;
+        }
     }
     
     public void CancelColor()
@@ -168,5 +211,15 @@ public class ColorManager : MonoBehaviour
         RemoveRed();
         RemoveGreen();
         RemoveBlue();
+    }
+
+    public Material GetLeft3DMat()
+    {
+        return note3DMats[1];
+    }
+
+    public Material GetRight3DMat()
+    {
+        return note3DMats[2];
     }
 }
