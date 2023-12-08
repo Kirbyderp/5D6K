@@ -10,6 +10,12 @@ public class SongManager : MonoBehaviour
                                                    { "Assets/Songs/Bowsers Dream Team Medium.txt", "Assets/Songs/Lavender Cemetery Medium.txt", "Assets/Songs/TestSong.txt" },
                                                    { "Assets/Songs/Bowsers Dream Team Hard.txt", "Assets/Songs/Lavender Cemetery Hard.txt", "Assets/Songs/TestSong.txt"} };
     public static readonly string[] audioPaths = { "Audio/BowsersDreamTeam", "Audio/LavenderCemetery", "Audio/TestSong" };
+    private static readonly int[] songDurs = { 90, 88, -1 }; //songDurs[curSongIndex]
+    private static readonly int[,,] notesInSong = new int[3, 3, 3] { { { 200, 78, 122 }, { 554, 199, 355 }, { 964, 521, 443 } },
+                                                                     { { 107, 43, 64 }, { 184, 65, 119 }, { 272, 147, 125 } },
+                                                                     { { -1, -1, -1 }, { -1, -1, -1 }, { -1, -1, -1 } } };
+                                                                   //notesInSong[curSongIndex, songDiff, songMode]
+    //notesInSong[curSongIndex, songDiff, songMode]
     private Song curSong;
     private int curSongIndex = 1;
     private bool readyToPlay = false, isSongPlaying = false, isSongPaused = false, tutPause = false;
@@ -28,11 +34,13 @@ public class SongManager : MonoBehaviour
     private AudioClip songAudio;
     private AudioSource audioSource;
     private ColorManager colorManager;
+    private MenuManager menuManager;
 
     private bool pressingLGrip = false;
     private bool pressingLTrigger = false;
     private bool pressingRTrigger = false;
     private bool pressingRGrip = false;
+    private bool hasUnpressedMenu = true;
 
     private KeyCode track1Hit = KeyCode.D;
     private KeyCode track2Hit = KeyCode.F;
@@ -47,7 +55,7 @@ public class SongManager : MonoBehaviour
     private int numMisses;
     private float accuracy;
     private int accuracyWeight;
-
+    private TMPro.TextMeshProUGUI statsSummary;
 
     //DEBUG VARS
     //public GameObject[] outlines;
@@ -63,6 +71,7 @@ public class SongManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        menuManager = GameObject.Find("Menu Canvas").GetComponent<MenuManager>();
         audioSource = GetComponent<AudioSource>();
         LoadSong(curSongIndex);
         all2DTracks = new Track2D[4] { GameObject.Find("Track2D1").GetComponent<Track2D>(),
@@ -71,6 +80,32 @@ public class SongManager : MonoBehaviour
                                        GameObject.Find("Track2D4").GetComponent<Track2D>()};
         all3DTracks = new Track3D[2] { GameObject.Find("Track3D5").GetComponent<Track3D>(),
                                        GameObject.Find("Track3D6").GetComponent<Track3D>()};
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; i < 3; i++)
+            {
+                for (int k = 0; i < 3; i++)
+                {
+                    if (!PlayerPrefs.HasKey((("bestHit2Dcount" + i) + j) + k))
+                    {
+                        PlayerPrefs.SetInt((("bestHit2Dcount" + i) + j) + k, 0);
+                    }
+                    if (PlayerPrefs.HasKey((("bestHit3Dcount" + i) + j) + k))
+                    {
+                        PlayerPrefs.SetInt((("bestHit3Dcount" + i) + j) + k, 0);
+                    }
+                    if (PlayerPrefs.HasKey((("maxCombo" + i) + j) + k))
+                    {
+                        PlayerPrefs.SetInt((("maxCombo" + i) + j) + k, 0);
+                    }
+                    if (PlayerPrefs.HasKey((("highestAccuracy" + i) + j) + k))
+                    {
+                        PlayerPrefs.SetFloat((("highestAccuracy" + i) + j) + k, 0);
+                    }
+                }
+            }
+        }
+        
         /*outlines = new GameObject[4];
         for (int i = 0; i < 4; i++)
         {
@@ -89,6 +124,11 @@ public class SongManager : MonoBehaviour
     public void SetColorManager(ColorManager managerIn)
     {
         colorManager = managerIn;
+    }
+
+    public void SetStatsSummary(TMPro.TextMeshProUGUI textIn)
+    {
+        statsSummary = textIn;
     }
 
     IEnumerator Test()
@@ -119,6 +159,32 @@ public class SongManager : MonoBehaviour
             if (deviceList.Count > 0)
             {
                 rightHand = deviceList[0];
+            }
+        }
+
+        if (isSongPlaying)
+        {
+            leftHand.TryGetFeatureValue(CommonUsages.menuButton, out bool isPressingMenu);
+            if (isPressingMenu && hasUnpressedMenu)
+            {
+                hasUnpressedMenu = false;
+                if (!menuManager.InMenuAnim())
+                {
+                    if (!isSongPaused)
+                    {
+                        audioSource.Pause();
+                        isSongPaused = true;
+                        menuManager.PauseSong();
+                    }
+                    else
+                    {
+                        menuManager.UnpauseSong();
+                    }
+                }
+            }
+            else if (!isPressingMenu && !hasUnpressedMenu)
+            {
+                hasUnpressedMenu = true;
             }
         }
 
@@ -399,7 +465,7 @@ public class SongManager : MonoBehaviour
             }
 
             hits2D.text = hit2Dcount + " / " + note2Ds.Length;
-            hits3D.text = hit3Dcount + " / " + note3Ds.Length;
+            hits3D.text = hit3Dcount + " / " + note3Ds.Length + "\n" + numMisses;
         }
     }
 
@@ -418,6 +484,7 @@ public class SongManager : MonoBehaviour
 
     public void LoadSong(int songIndex)
     {
+        readyToPlay = false;
         curSong = new Song(songPaths[songDiff, songIndex]);
         curTime = 0;
         note2DSpawnIndex = 0;
@@ -455,6 +522,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying && readyToPlay)
         {
             isSongPlaying = true;
+            isSongPaused = false;
             audioSource.Play();
         }
     }
@@ -463,7 +531,105 @@ public class SongManager : MonoBehaviour
     {
         isSongPlaying = false;
         audioSource.Stop();
+        menuManager.ActivateEndMenu();
+
+        //Update End Menu Stats
+        statsSummary.text = hit2Dcount + " / " + note2Ds.Length + "\n"
+                          + hit3Dcount + " / " + note3Ds.Length + "\n"
+                          + (hit2Dcount + hit3Dcount) + " / " + (note2Ds.Length + note3Ds.Length) + "\n"
+                          + maxCombo + "\n"
+                          + (numMisses == 0 ? "Full Clear!" : numMisses) + "\n"
+                          + (((float)((int)(accuracy * 10000))) / 100) + "%";
+
+        //Update Player Prefs - UNCOMMENT FOR FINAL BUILD
+        /*
+        if (PlayerPrefs.GetInt((("bestHit2Dcount" + curSongIndex) + songDiff) + songMode) < hit2Dcount)
+        {
+            PlayerPrefs.SetInt((("bestHit2Dcount" + curSongIndex) + songDiff) + songMode, hit2Dcount);
+        }
+        if (PlayerPrefs.GetInt((("bestHit3Dcount" + curSongIndex) + songDiff) + songMode) < hit3Dcount)
+        {
+            PlayerPrefs.SetInt((("bestHit3Dcount" + curSongIndex) + songDiff) + songMode, hit3Dcount);
+        }
+        if (PlayerPrefs.GetInt((("maxCombo" + curSongIndex) + songDiff) + songMode) < maxCombo)
+        {
+            PlayerPrefs.SetInt((("maxCombo" + curSongIndex) + songDiff) + songMode, maxCombo);
+        }
+        if (PlayerPrefs.GetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode) < accuracy)
+        {
+            PlayerPrefs.SetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode, accuracy);
+        }*/
+
+        menuManager.EndSongMenu();
+    }
+
+    //Needed for when a song is ended mid-song
+    private void DespawnAllNotes()
+    {
+        foreach (Note2D note in note2Ds)
+        {
+            if (!note.WasHit() && note.HasSpawned())
+            {
+                Destroy(spawned2DNotes[note.GetSpawnIndex()]);
+                if (note.GetNoteType() == 1)
+                {
+                    if (track2DHoldObjects[note.GetTrackNum() - 1].Count > 0)
+                    {
+                        GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
+                        track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
+                        Destroy(curHold);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            while (track2DHoldObjects[i].Count > 0)
+            {
+                GameObject curHold = track2DHoldObjects[i][0];
+                track2DHoldObjects[i].RemoveAt(0);
+                Destroy(curHold);
+            }
+        }
+
+        foreach (Note3D note in note3Ds)
+        {
+            if (!note.WasHit() && note.HasSpawned())
+            {
+                Destroy(spawned3DNotes[note.GetSpawnIndex()]);
+            }
+        }
+    }
+
+    public void RestartSong()
+    {
+        isSongPlaying = false;
+        audioSource.Stop();
+        DespawnAllNotes();
         LoadSong(curSongIndex);
+        menuManager.RestartSong();
+    }
+
+    public void EndSongPremature()
+    {
+        isSongPlaying = false;
+        audioSource.Stop();
+        DespawnAllNotes();
+        LoadSong(curSongIndex);
+        menuManager.PauseToSong();
+    }
+
+    public void RestartSongFromEnd()
+    {
+        LoadSong(curSongIndex);
+        menuManager.RestartSongFromEnd();
+    }
+
+    public void ToSelectFromEnd()
+    {
+        LoadSong(curSongIndex);
+        menuManager.EndToSong();
     }
 
     public void HitTrack(int trackNum)
@@ -571,7 +737,7 @@ public class SongManager : MonoBehaviour
         //Note hit at the perfect time has an accuracy of 100%
         //Note hit at the worst possible time that still hits it has an accuracy of 60%
         accuracy = (accuracy * accuracyWeight +
-                   .4f * (1 - Mathf.Abs(curTime - noteHitTime)) / hitLeniency + .6f)
+                   .4f * (1 - Mathf.Abs(curTime - noteHitTime) / hitLeniency) + .6f)
                    / (accuracyWeight + 1);
         accuracyWeight++;
     }
@@ -582,6 +748,12 @@ public class SongManager : MonoBehaviour
         numMisses++;
         accuracy = (accuracy * accuracyWeight) / (accuracyWeight + 1);
         accuracyWeight++;
+    }
+
+    public void UnpauseSong()
+    {
+        audioSource.Play();
+        isSongPaused = false;
     }
 
     public void SetDiffEasy()
@@ -638,15 +810,23 @@ public class SongManager : MonoBehaviour
     public void SetSongTut()
     {
         curSongIndex = 2;
+        LoadSong(curSongIndex);
     }
 
     public void SetSongLav()
     {
         curSongIndex = 1;
+        LoadSong(curSongIndex);
     }
 
     public void SetSongBDT()
     {
         curSongIndex = 0;
+        LoadSong(curSongIndex);
+    }
+
+    public void ChangeVolume(System.Single sIn)
+    {
+        audioSource.volume = sIn;
     }
 }

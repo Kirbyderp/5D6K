@@ -1,36 +1,44 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
-    private GameObject mainMenu, songMenu, pauseMenu, creditsMenu, optionsMenu;
+    private GameObject mainMenu, songMenu, pauseMenu, creditsMenu, optionsMenu, endMenu;
     private GameObject tutInfo, lavInfo, bDTInfo;
+    private Slider optionVolSlider, pauseVolSlider;
     private SongManager songManager;
-    private bool waitingForMenuAnim = false, startingSong = false;
+    private bool waitingForMenuAnim = false, startingSong = false, unpausingSong = false, restartingSong = false;
 
     // Start is called before the first frame update
     void Start()
     {
         songManager = GameObject.Find("SongManager").GetComponent<SongManager>();
         songManager.SetColorManager(GameObject.Find("Color Canvas").GetComponent<ColorManager>());
+        songManager.SetStatsSummary(GameObject.Find("Song Stats Summary Text").GetComponent<TMPro.TextMeshProUGUI>());
         tutInfo = GameObject.Find("Tutorial Info Menu");
         lavInfo = GameObject.Find("Lavender Info Menu");
         bDTInfo = GameObject.Find("Dream Team Info Menu");
+        optionVolSlider = GameObject.Find("Options Volume Slider").GetComponent<Slider>();
+        pauseVolSlider = GameObject.Find("Pause Volume Slider").GetComponent<Slider>();
 
         mainMenu = GameObject.Find("Main Menu");
         songMenu = GameObject.Find("Song Menu");
         pauseMenu = GameObject.Find("Pause Menu");
         creditsMenu = GameObject.Find("Credits Menu");
         optionsMenu = GameObject.Find("Options Menu");
+        endMenu = GameObject.Find("End Song Menu");
         songMenu.transform.localScale = Vector3.zero;
         songMenu.SetActive(false);
         pauseMenu.transform.localScale = Vector3.zero;
         pauseMenu.SetActive(false);
-        creditsMenu.SetActive(false);
         creditsMenu.transform.localScale = Vector3.zero;
-        optionsMenu.SetActive(false);
+        creditsMenu.SetActive(false);
         optionsMenu.transform.localScale = Vector3.zero;
+        optionsMenu.SetActive(false);
+        endMenu.transform.localScale = Vector3.zero;
+        endMenu.SetActive(false);
     }
 
     // Update is called once per frame
@@ -52,6 +60,16 @@ public class MenuManager : MonoBehaviour
         if (startingSong)
         {
             startingSong = false;
+            songManager.PlaySong();
+        }
+        if (unpausingSong)
+        {
+            unpausingSong = false;
+            songManager.UnpauseSong();
+        }
+        if (restartingSong)
+        {
+            restartingSong = false;
             songManager.PlaySong();
         }
     }
@@ -110,6 +128,8 @@ public class MenuManager : MonoBehaviour
         if (!waitingForMenuAnim)
         {
             waitingForMenuAnim = true;
+            optionsMenu.SetActive(true);
+            optionVolSlider.value = songManager.GetComponent<AudioSource>().volume;
             StartCoroutine(SwitchMenuAnim(mainMenu, optionsMenu));
         }
     }
@@ -181,6 +201,84 @@ public class MenuManager : MonoBehaviour
             waitingForMenuAnim = true;
             startingSong = true;
             StartCoroutine(ShrinkMenuAnim(songMenu));
+        }
+    }
+
+    public bool InMenuAnim()
+    {
+        return waitingForMenuAnim;
+    }
+
+    public void PauseSong()
+    {
+        if (!waitingForMenuAnim)
+        {
+            waitingForMenuAnim = true;
+            pauseMenu.SetActive(true);
+            pauseVolSlider.value = songManager.GetComponent<AudioSource>().volume;
+            StartCoroutine(ExpandMenuAnim(pauseMenu));
+        }
+    }
+
+    public void UnpauseSong()
+    {
+        if (!waitingForMenuAnim)
+        {
+            waitingForMenuAnim = true;
+            unpausingSong = true;
+            StartCoroutine(ShrinkMenuAnim(pauseMenu));
+        }
+    }
+
+    public void RestartSong()
+    {
+        if (!waitingForMenuAnim)
+        {
+            waitingForMenuAnim = true;
+            restartingSong = true;
+            StartCoroutine(ShrinkMenuAnim(pauseMenu));
+        }
+    }
+
+    public void PauseToSong()
+    {
+        if (!waitingForMenuAnim)
+        {
+            waitingForMenuAnim = true;
+            StartCoroutine(SwitchMenuAnim(pauseMenu, songMenu));
+        }
+    }
+
+    public void ActivateEndMenu()
+    {
+        endMenu.SetActive(true);
+    }
+
+    public void EndSongMenu()
+    {
+        if (!waitingForMenuAnim)
+        {
+            waitingForMenuAnim = true;
+            StartCoroutine(ExpandMenuAnim(endMenu));
+        }
+    }
+
+    public void RestartSongFromEnd()
+    {
+        if (!waitingForMenuAnim)
+        {
+            waitingForMenuAnim = true;
+            restartingSong = true;
+            StartCoroutine(ShrinkMenuAnim(endMenu));
+        }
+    }
+
+    public void EndToSong()
+    {
+        if (!waitingForMenuAnim)
+        {
+            waitingForMenuAnim = true;
+            StartCoroutine(SwitchMenuAnim(endMenu, songMenu));
         }
     }
 }
