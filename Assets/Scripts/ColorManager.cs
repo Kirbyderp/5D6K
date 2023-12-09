@@ -14,10 +14,12 @@ public class ColorManager : MonoBehaviour
     public GameObject[] controllers;
     public Material[] note3DMats;
     public GameObject previewNote3D;
+    private MenuManager menuManager;
     
     // Start is called before the first frame update
     void Start()
     {
+        menuManager = GameObject.Find("Menu Canvas").GetComponent<MenuManager>();
         controllers[0].SetActive(true);
         controllers[1].SetActive(true);
         for (int i = 1; i <= 6; i++)
@@ -48,6 +50,7 @@ public class ColorManager : MonoBehaviour
         note3DMats[1].color = trackButtons[4].color;
         note3DMats[2].color = trackButtons[5].color;
         UpdatePreview(tempColor);
+        menuManager.ColorHasSetUp();
     }
 
     // Update is called once per frame

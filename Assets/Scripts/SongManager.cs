@@ -6,16 +6,15 @@ using UnityEngine.UI;
 
 public class SongManager : MonoBehaviour
 {
-    public static readonly string[,] songPaths = { { "Assets/Songs/Bowsers Dream Team Easy.txt", "Assets/Songs/Lavender Cemetery Easy.txt", "Assets/Songs/TestSong.txt" },
-                                                   { "Assets/Songs/Bowsers Dream Team Medium.txt", "Assets/Songs/Lavender Cemetery Medium.txt", "Assets/Songs/TestSong.txt" },
-                                                   { "Assets/Songs/Bowsers Dream Team Hard.txt", "Assets/Songs/Lavender Cemetery Hard.txt", "Assets/Songs/TestSong.txt"} };
-    public static readonly string[] audioPaths = { "Audio/BowsersDreamTeam", "Audio/LavenderCemetery", "Audio/TestSong" };
-    private static readonly int[] songDurs = { 90, 88, -1 }; //songDurs[curSongIndex]
+    public static readonly string[,] songPaths = { { "Assets/Songs/Bowsers Dream Team Easy.txt", "Assets/Songs/Lavender Cemetery Easy.txt", "Assets/Songs/Tutorial.txt", "Assets/Songs/TestSong.txt" },
+                                                   { "Assets/Songs/Bowsers Dream Team Medium.txt", "Assets/Songs/Lavender Cemetery Medium.txt", "Assets/Songs/Tutorial.txt", "Assets/Songs/TestSong.txt" },
+                                                   { "Assets/Songs/Bowsers Dream Team Hard.txt", "Assets/Songs/Lavender Cemetery Hard.txt", "Assets/Songs/Tutorial.txt", "Assets/Songs/TestSong.txt"} };
+    public static readonly string[] audioPaths = { "Audio/BowsersDreamTeam", "Audio/LavenderCemetery", "Audio/Tutorial", "Audio/TestSong" };
+    private static readonly int[] songDurs = { 90, 88, 74 }; //songDurs[curSongIndex]
     private static readonly int[,,] notesInSong = new int[3, 3, 3] { { { 200, 78, 122 }, { 554, 199, 355 }, { 964, 521, 443 } },
                                                                      { { 107, 43, 64 }, { 184, 65, 119 }, { 272, 147, 125 } },
-                                                                     { { -1, -1, -1 }, { -1, -1, -1 }, { -1, -1, -1 } } };
+                                                                     { { 90, 55, 35 }, { 90, 55, 35 }, { 90, 55, 35 } } };
                                                                    //notesInSong[curSongIndex, songDiff, songMode]
-    //notesInSong[curSongIndex, songDiff, songMode]
     private Song curSong;
     private int curSongIndex = 1;
     private bool readyToPlay = false, isSongPlaying = false, isSongPaused = false, tutPause = false;
@@ -35,6 +34,7 @@ public class SongManager : MonoBehaviour
     private AudioSource audioSource;
     private ColorManager colorManager;
     private MenuManager menuManager;
+    private TutorialManager tutManager;
 
     private bool pressingLGrip = false;
     private bool pressingLTrigger = false;
@@ -71,6 +71,7 @@ public class SongManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        tutManager = GameObject.Find("Tutorial Canvas").GetComponent<TutorialManager>();
         menuManager = GameObject.Find("Menu Canvas").GetComponent<MenuManager>();
         audioSource = GetComponent<AudioSource>();
         LoadSong(curSongIndex);
@@ -82,25 +83,29 @@ public class SongManager : MonoBehaviour
                                        GameObject.Find("Track3D6").GetComponent<Track3D>()};
         for (int i = 0; i < 3; i++)
         {
-            for (int j = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
             {
-                for (int k = 0; i < 3; i++)
+                for (int k = 0; k < 3; k++)
                 {
                     if (!PlayerPrefs.HasKey((("bestHit2Dcount" + i) + j) + k))
                     {
                         PlayerPrefs.SetInt((("bestHit2Dcount" + i) + j) + k, 0);
                     }
-                    if (PlayerPrefs.HasKey((("bestHit3Dcount" + i) + j) + k))
+                    if (!PlayerPrefs.HasKey((("bestHit3Dcount" + i) + j) + k))
                     {
                         PlayerPrefs.SetInt((("bestHit3Dcount" + i) + j) + k, 0);
                     }
-                    if (PlayerPrefs.HasKey((("maxCombo" + i) + j) + k))
+                    if (!PlayerPrefs.HasKey((("maxCombo" + i) + j) + k))
                     {
                         PlayerPrefs.SetInt((("maxCombo" + i) + j) + k, 0);
                     }
-                    if (PlayerPrefs.HasKey((("highestAccuracy" + i) + j) + k))
+                    if (!PlayerPrefs.HasKey((("highestAccuracy" + i) + j) + k))
                     {
                         PlayerPrefs.SetFloat((("highestAccuracy" + i) + j) + k, 0);
+                    }
+                    if (!PlayerPrefs.HasKey((("leastMisses" + i) + j) + k))
+                    {
+                        PlayerPrefs.SetInt((("leastMisses" + i) + j) + k, int.MaxValue);
                     }
                 }
             }
@@ -129,6 +134,16 @@ public class SongManager : MonoBehaviour
     public void SetStatsSummary(TMPro.TextMeshProUGUI textIn)
     {
         statsSummary = textIn;
+    }
+
+    public int GetSongMode()
+    {
+        return songMode;
+    }
+
+    public void SetSongMode(int modeIn)
+    {
+        songMode = modeIn;
     }
 
     IEnumerator Test()
@@ -186,6 +201,13 @@ public class SongManager : MonoBehaviour
             {
                 hasUnpressedMenu = true;
             }
+        }
+
+        if (isSongPlaying && curSongIndex == 2 && curTime > tutManager.GetNextPauseTime() && !tutPause)
+        {
+            audioSource.Pause();
+            tutPause = true;
+            tutManager.ShowTutMenu();
         }
 
         if (isSongPlaying && !isSongPaused && !tutPause)
@@ -514,6 +536,8 @@ public class SongManager : MonoBehaviour
         accuracy = 0;
         accuracyWeight = 0;
 
+        tutManager.ResetNextPauseTimeIndex();
+
         readyToPlay = true;
     }
 
@@ -558,6 +582,10 @@ public class SongManager : MonoBehaviour
         if (PlayerPrefs.GetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode) < accuracy)
         {
             PlayerPrefs.SetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode, accuracy);
+        }
+        if (!PlayerPrefs.GetInt((("leastMisses" + i) + j) + k) > numMisses)
+        {
+            PlayerPrefs.SetInt((("leastMisses" + i) + j) + k, numMisses);
         }*/
 
         menuManager.EndSongMenu();
@@ -668,9 +696,13 @@ public class SongManager : MonoBehaviour
     {
         foreach (Note2D note in note2Ds)
         {
-            if (!note.WasHit() && note.GetTrackNum() == trackNum && note.HasSpawned() &&
-                Mathf.Abs(curTime - note.GetTime()) < hitLeniency &&
-                note.GetNoteType() == 2)
+            if (!note.WasHit() && note.GetTrackNum() == trackNum && note.HasSpawned() && note.GetNoteType() == 1)
+            {
+                return;
+            }
+            else if (!note.WasHit() && note.GetTrackNum() == trackNum && note.HasSpawned() &&
+                     Mathf.Abs(curTime - note.GetTime()) < hitLeniency &&
+                     note.GetNoteType() == 2)
             {
                 Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                 note.Hit();
@@ -690,6 +722,11 @@ public class SongManager : MonoBehaviour
         if (all2DTracks[trackNum - 1].IsHolding())
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
+            if (curCombo == maxCombo)
+            {
+                maxCombo--;
+            }
+            curCombo--;
             MissNote();
             if (track2DHoldObjects[trackNum - 1].Count > 0)
             {
@@ -719,7 +756,7 @@ public class SongManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("Bad Timing!");
+                    //Debug.Log("Bad Timing!");
                     MissNote();
                 }
                 return;
@@ -752,7 +789,10 @@ public class SongManager : MonoBehaviour
 
     public void UnpauseSong()
     {
-        audioSource.Play();
+        if (!tutPause)
+        {
+            audioSource.Play();
+        }
         isSongPaused = false;
     }
 
@@ -761,6 +801,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songDiff = 0;
+            menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
             LoadSong(curSongIndex);
         }
     }
@@ -770,6 +811,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songDiff = 1;
+            menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
             LoadSong(curSongIndex);
         }
     }
@@ -779,6 +821,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songDiff = 2;
+            menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
             LoadSong(curSongIndex);
         }
     }
@@ -788,6 +831,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songMode = 0;
+            menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
         }
     }
 
@@ -796,6 +840,7 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songMode = 1;
+            menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
         }
     }
 
@@ -804,29 +849,42 @@ public class SongManager : MonoBehaviour
         if (!isSongPlaying)
         {
             songMode = 2;
+            menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
         }
     }
 
     public void SetSongTut()
     {
         curSongIndex = 2;
+        menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
         LoadSong(curSongIndex);
     }
 
     public void SetSongLav()
     {
         curSongIndex = 1;
+        menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, -1);
         LoadSong(curSongIndex);
     }
 
     public void SetSongBDT()
     {
         curSongIndex = 0;
+        menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, -1);
         LoadSong(curSongIndex);
     }
 
     public void ChangeVolume(System.Single sIn)
     {
         audioSource.volume = sIn;
+    }
+
+    public void ContinueFromTut()
+    {
+        if (!isSongPaused)
+        {
+            audioSource.Play();
+        }
+        tutPause = false;
     }
 }

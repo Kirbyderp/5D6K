@@ -1,21 +1,8 @@
-/* BDT Hart
- * 2D until 32.4
- * 3D until 42
+/* TODO:
  * 
- * 
- * TODO:
- *  Combo
- *  Max Combo
- *  Total Hits
- *  Num Misses
- *  Accuracy
- *  
- *  UI
- *      Song Select
- *      Main Menu
- *      Credits
- *      Pause Menu
- *          Resume
- *          Restart
- *          Return to Menu
+ * Finish Tutorial Text
+ * Add In-Song UI
+ * Add Quit Game Button
+ * Add in-song feedback for hitting and/or missing notes
+ * Add Everything to proper environment.
  */
