@@ -588,9 +588,9 @@ public class SongManager : MonoBehaviour
         {
             PlayerPrefs.SetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode, accuracy);
         }
-        if (!PlayerPrefs.GetInt((("leastMisses" + i) + j) + k) > numMisses)
+        if (PlayerPrefs.GetInt((("leastMisses" + curSongIndex) + songDiff) + songMode) > numMisses)
         {
-            PlayerPrefs.SetInt((("leastMisses" + i) + j) + k, numMisses);
+            PlayerPrefs.SetInt((("leastMisses" + curSongIndex) + songDiff) + songMode, numMisses);
         }*/
 
         menuManager.EndSongMenu();

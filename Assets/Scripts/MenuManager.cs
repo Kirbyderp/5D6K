@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
@@ -427,5 +428,10 @@ public class MenuManager : MonoBehaviour
             accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + songDiff) + storedSongMode) * 10000))) / 100) + "%";
             comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + songDiff) + songMode);
         }
+    }
+
+    public void LoadNewScene(int sceneNum)
+    {
+        SceneManager.LoadScene("Environment_" + sceneNum);
     }
 }
