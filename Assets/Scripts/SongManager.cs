@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.UI;
 
 public class SongManager : MonoBehaviour
@@ -46,8 +47,14 @@ public class SongManager : MonoBehaviour
     private KeyCode track2Hit = KeyCode.F;
     private KeyCode track3Hit = KeyCode.H;
     private KeyCode track4Hit = KeyCode.J;
-
+    
+    //Controller Input and Feedback Vars
     public InputDevice leftHand, rightHand;
+    public XRBaseControllerInteractor leftHaptics, rightHaptics;
+    private float leftHapticCooldown = 0, rightHapticCooldown = 0;
+    private int leftRapidHapticCount = 0, rightRapidHapticCount = 0;
+    private bool usingHaptics = true;
+    private GameObject hapticsCheckmark;
 
     //Song Stat Vars
     private int hit2Dcount, hit3Dcount;
@@ -71,14 +78,36 @@ public class SongManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        tutManager = GameObject.Find("Tutorial Canvas").GetComponent<TutorialManager>();
+        hapticsCheckmark = GameObject.Find("Haptics Checkmark");
+        if (!PlayerPrefs.HasKey("UsingHaptics"))
+        {
+            PlayerPrefs.SetInt("UsingHaptics", 1);
+        }
+        else if (PlayerPrefs.GetInt("UsingHaptics") == 0)
+        {
+            hapticsCheckmark.SetActive(false);
+            usingHaptics = false;
+        }
         menuManager = GameObject.Find("Menu Canvas").GetComponent<MenuManager>();
+        menuManager.SongManHasSetUp();
+        tutManager = GameObject.Find("Tutorial Canvas").GetComponent<TutorialManager>();
         audioSource = GetComponent<AudioSource>();
         LoadSong(curSongIndex);
         all2DTracks = new Track2D[4] { GameObject.Find("Track2D1").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D2").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D3").GetComponent<Track2D>(),
                                        GameObject.Find("Track2D4").GetComponent<Track2D>()};
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < all2DTracks[i].transform.childCount; j++)
+            {
+                if (all2DTracks[i].transform.GetChild(j).gameObject.CompareTag("AnimRing"))
+                {
+                    all2DTracks[i].SetAnimRing(all2DTracks[i].transform.GetChild(j).gameObject.GetComponent<Image>());
+                    break;
+                }
+            }
+        }
         all3DTracks = new Track3D[2] { GameObject.Find("Track3D5").GetComponent<Track3D>(),
                                        GameObject.Find("Track3D6").GetComponent<Track3D>()};
         for (int i = 0; i < 3; i++)
@@ -217,6 +246,26 @@ public class SongManager : MonoBehaviour
         {
             //Store the time that has advanced to keep it consistent throughout Update
             float deltaTime = Time.deltaTime;
+
+            if (leftHapticCooldown > 0)
+            {
+                leftHapticCooldown -= deltaTime;
+            }
+            else if (leftRapidHapticCount > 0)
+            {
+                leftRapidHapticCount /= 2;
+                leftHapticCooldown = .1f;
+            }
+
+            if (rightHapticCooldown > 0)
+            {
+                rightHapticCooldown -= deltaTime;
+            }
+            else if (rightRapidHapticCount > 0)
+            {
+                rightRapidHapticCount /= 2;
+                rightHapticCooldown = .1f;
+            }
 
             if (songMode != 2)
             {
@@ -376,6 +425,7 @@ public class SongManager : MonoBehaviour
                         if (note.GetNoteType() == 2)
                         {
                             all2DTracks[note.GetTrackNum() - 1].SetIsHolding(false);
+                            all2DTracks[note.GetTrackNum() - 1].StopHoldingAnim();
                             if (track2DHoldObjects[note.GetTrackNum() - 1].Count > 0)
                             {
                                 GameObject curHold = track2DHoldObjects[note.GetTrackNum() - 1][0];
@@ -543,6 +593,11 @@ public class SongManager : MonoBehaviour
 
         tutManager.ResetNextPauseTimeIndex();
 
+        leftHapticCooldown = 0;
+        rightHapticCooldown = 0;
+        leftRapidHapticCount = 0;
+        rightRapidHapticCount = 0;
+
         readyToPlay = true;
     }
 
@@ -552,6 +607,7 @@ public class SongManager : MonoBehaviour
         {
             isSongPlaying = true;
             isSongPaused = false;
+            tutPause = false;
             audioSource.Play();
         }
     }
@@ -642,6 +698,7 @@ public class SongManager : MonoBehaviour
         DespawnAllNotes();
         LoadSong(curSongIndex);
         menuManager.RestartSong();
+        tutManager.EndTutPremature();
     }
 
     public void EndSongPremature()
@@ -651,6 +708,7 @@ public class SongManager : MonoBehaviour
         DespawnAllNotes();
         LoadSong(curSongIndex);
         menuManager.PauseToSong();
+        tutManager.EndTutPremature();
     }
 
     public void RestartSongFromEnd()
@@ -674,9 +732,14 @@ public class SongManager : MonoBehaviour
             {
                 Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                 note.Hit();
+                if (note.GetNoteType() == 0)
+                {
+                    all2DTracks[note.GetTrackNum() - 1].PlayHitAnim();
+                }
                 if (note.GetNoteType() == 1)
                 {
                     all2DTracks[note.GetTrackNum() - 1].SetIsHolding(true);
+                    all2DTracks[note.GetTrackNum() - 1].PlayHoldingAnim();
                 }
                 if (note.GetNoteType() == 2)
                 {
@@ -686,6 +749,7 @@ public class SongManager : MonoBehaviour
                         track2DHoldObjects[note.GetTrackNum() - 1].RemoveAt(0);
                         Destroy(curHold);
                     }
+                    all2DTracks[note.GetTrackNum() - 1].PlayHitAnim();
                 }
                 //Debug.Log("Note Hit!");
                 HitNote(note.GetTime());
@@ -711,6 +775,8 @@ public class SongManager : MonoBehaviour
             {
                 Destroy(spawned2DNotes[note.GetSpawnIndex()]);
                 note.Hit();
+                all2DTracks[trackNum - 1].StopHoldingAnim();
+                all2DTracks[trackNum - 1].PlayHitAnim();
                 HitNote(note.GetTime());
                 all2DTracks[trackNum - 1].SetIsHolding(false);
                 hit2Dcount++;
@@ -727,6 +793,7 @@ public class SongManager : MonoBehaviour
         if (all2DTracks[trackNum - 1].IsHolding())
         {
             all2DTracks[trackNum - 1].SetIsHolding(false);
+            all2DTracks[trackNum - 1].StopHoldingAnim();
             if (curCombo == maxCombo)
             {
                 maxCombo--;
@@ -758,6 +825,21 @@ public class SongManager : MonoBehaviour
                     //Debug.Log("3d Note Hit!");
                     HitNote(note.GetTime());
                     hit3Dcount++;
+                    if (usingHaptics)
+                    {
+                        if (trackNum == 5)
+                        {
+                            leftHaptics.SendHapticImpulse(leftRapidHapticCount < 10 ? .5f / Mathf.Pow(1.1f, leftRapidHapticCount) : .2f, .1f);
+                            leftHapticCooldown = .5f;
+                            leftRapidHapticCount++;
+                        }
+                        else if (trackNum == 6)
+                        {
+                            rightHaptics.SendHapticImpulse(leftRapidHapticCount < 10 ? .5f / Mathf.Pow(1.1f, leftRapidHapticCount) : .2f, .1f);
+                            rightHapticCooldown = .5f;
+                            rightRapidHapticCount++;
+                        }
+                    }
                 }
                 else
                 {
@@ -891,5 +973,21 @@ public class SongManager : MonoBehaviour
             audioSource.Play();
         }
         tutPause = false;
+    }
+
+    public void ToggleHaptics()
+    {
+        if (PlayerPrefs.GetInt("UsingHaptics") == 0)
+        {
+            PlayerPrefs.SetInt("UsingHaptics", 1);
+            hapticsCheckmark.SetActive(true);
+            usingHaptics = true;
+        }
+        else
+        {
+            PlayerPrefs.SetInt("UsingHaptics", 0);
+            hapticsCheckmark.SetActive(false);
+            usingHaptics = false;
+        }
     }
 }

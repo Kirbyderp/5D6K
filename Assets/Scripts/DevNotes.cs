@@ -1,5 +1,7 @@
 /* TODO:
  * 
- * Add animation for hitting/missing notes?
- * Fix Highway UI bug
+ * Set Default Note Colors
+ * Swap Return and Start Song buttons
+ * Indicate that difficulty cannot be changed for tutorial
+ * 
  */

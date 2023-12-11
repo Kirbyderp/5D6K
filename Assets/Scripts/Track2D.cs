@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Track2D : MonoBehaviour
 {
     public int trackNum;
     private bool isHolding = false;
-    
+    private Image animRing;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -17,6 +19,12 @@ public class Track2D : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void SetAnimRing(Image ringIn)
+    {
+        animRing = ringIn;
+        animRing.color = new Color(1, 1, 1, 0);
     }
 
     public bool IsHolding()
@@ -41,5 +49,46 @@ public class Track2D : MonoBehaviour
                                                   child.localPosition.z);
             }
         }
+    }
+
+    public void PlayHitAnim()
+    {
+        StopAllCoroutines();
+        animRing.color = new Color(1, 1, 1, 1);
+        StartCoroutine(HitAnim());
+    }
+
+    IEnumerator HitAnim()
+    {
+        for (int frameNum = 0; frameNum < 20; frameNum++)
+        {
+            yield return new WaitForSeconds(.01f);
+            animRing.color = new Color(1, 1, 1, 1 - frameNum / 20f);
+        }
+        animRing.color = new Color(1, 1, 1, 0);
+    }
+
+    public void PlayHoldingAnim()
+    {
+        StopAllCoroutines();
+        animRing.color = new Color(1, 1, 1, 1);
+        StartCoroutine(HoldingAnim());
+    }
+
+    public void StopHoldingAnim()
+    {
+        StopAllCoroutines();
+        animRing.color = new Color(1, 1, 1, 0);
+    }
+
+    IEnumerator HoldingAnim()
+    {
+        animRing.color = new Color(1, 1, 1, 1);
+        for (int frameNum = 0; frameNum < 50; frameNum++)
+        {
+            yield return new WaitForSeconds(.01f);
+            animRing.color = new Color(1, 1, 1, Mathf.Abs(frameNum - 25)/25f);
+        }
+        StartCoroutine(HoldingAnim());
     }
 }

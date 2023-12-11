@@ -5,14 +5,15 @@ using UnityEngine;
 public class TutorialManager : MonoBehaviour
 {
     private float[] pauseTimes = { 0, 8.7f, 17.5f, 39.1f, 90 };
-    private int[] numTextBoxes = { 4, 3, 3, 1, 0 };
+    private int[] numTextBoxes = { 4, 4, 3, 1, 0 };
     private int curTextBox = 0;
     private string[][] textBoxes = { new string[] { "Welcome to the Rhythmulti tutorial!\n\n" +
                                                     "In this game, there are two kinds of notes that you will need to hit.",
                                                     "The first kind of notes are 2D notes.\n\n2D notes will move down the four " +
                                                     "tracks that are ahead of you. When a 2D note fully obscures the target " +
                                                     "at the bottom of the track, press the corresponding button on your " +
-                                                    "controllers to hit it.",
+                                                    "controllers to hit it. Successfully hitting a note will cause the target " +
+                                                    "in its track to flash.",
                                                     "To hit 2D notes, use the grip and trigger buttons on your controllers. \n\n" +
                                                     "If you hold your controllers like the ones ahead, the placement of the grip " +
                                                     "and trigger buttons will match with the placement of the tracks. You do not " +
@@ -30,6 +31,8 @@ public class TutorialManager : MonoBehaviour
                                                     "right.", 
                                                     "It is recommended that you stand a foot or two behind the red line, but " +
                                                     "feel free to position yourself in whatever way works best for you.\n\n" +
+                                                    "Finally, when you hit a 3D note with good timing, the corresponding " +
+                                                    "controller will vibrate slightly. You can disable this in the options menu.",
                                                     "Try practicing hitting some 3D notes!"},
                                      new string[] { "There is one more kind of 2D note which requires being held.\n\n" +
                                                     "These 2D notes will have a line emanating from them connecting them to " +
@@ -38,7 +41,8 @@ public class TutorialManager : MonoBehaviour
                                                     "If you ever release the button too early, or if you miss the first part " +
                                                     "of this note entirely, the connecting line will darken. If this happens, " +
                                                     "you will be able to hit the second part of the note like a normal 2D note.",
-                                                    "Try practicing hitting some 2D held notes!"},
+                                                    "Additionally, the target will repeatedly flash while successfully holding a " +
+                                                    "2D held note.\n\nTry practicing hitting some 2D held notes!"},
                                      new string[] { "Finally, you can pause the game during a song using the triple bar button " +
                                                     "on your left controller.\n\nHave fun playing Rhythmulti!"},};
     private int nextPauseTimeIndex = 0;
@@ -141,5 +145,12 @@ public class TutorialManager : MonoBehaviour
         }
         tutMenu.transform.localScale = Vector3.one;
         waitingForTutAnim = false;
+    }
+
+    public void EndTutPremature()
+    {
+        ResetNextPauseTimeIndex();
+        tutMenu.transform.localScale = Vector3.zero;
+        tutMenu.SetActive(false);
     }
 }

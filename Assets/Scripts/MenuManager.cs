@@ -15,7 +15,7 @@ public class MenuManager : MonoBehaviour
     private bool waitingForMenuAnim = false, startingSong = false, unpausingSong = false, restartingSong = false;
     private float[] indXLocalPos = { -48.30002f, -.9000242f, 46.49997f };
     private int storedSongMode = -1;
-    private bool optionsMenuFound = false, colorMenuDone = false;
+    private bool optionsMenuFound = false, colorMenuDone = false, songManagerDone = false;
 
     // Start is called before the first frame update
     void Start()
@@ -59,7 +59,7 @@ public class MenuManager : MonoBehaviour
         smInd.SetActive(false);
         sdInd.SetActive(false);
         tutInfo.SetActive(true);
-        if (colorMenuDone)
+        if (colorMenuDone && songManagerDone)
         {
             optionsMenu.SetActive(false);
         }
@@ -73,13 +73,25 @@ public class MenuManager : MonoBehaviour
 
     public void ColorHasSetUp()
     {
-        if (optionsMenuFound)
+        if (optionsMenuFound && songManagerDone)
         {
             optionsMenu.SetActive(false);
         }
         else
         {
             colorMenuDone = true;
+        }
+    }
+
+    public void SongManHasSetUp()
+    {
+        if (optionsMenuFound && colorMenuDone)
+        {
+            optionsMenu.SetActive(false);
+        }
+        else
+        {
+            songManagerDone = true;
         }
     }
 

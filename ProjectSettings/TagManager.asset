@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Anchor
   - Note
+  - AnimRing
   layers:
   - Default
   - TransparentFX
