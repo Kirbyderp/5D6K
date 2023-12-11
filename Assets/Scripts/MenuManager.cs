@@ -308,6 +308,11 @@ public class MenuManager : MonoBehaviour
         }
     }
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
     public void EndToSong()
     {
         if (!waitingForMenuAnim)
