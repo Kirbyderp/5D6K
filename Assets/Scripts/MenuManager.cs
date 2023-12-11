@@ -432,6 +432,6 @@ public class MenuManager : MonoBehaviour
 
     public void LoadNewScene(int sceneNum)
     {
-        SceneManager.LoadScene("Environment_" + sceneNum);
+        SceneManager.LoadScene("Environment_" + sceneNum, LoadSceneMode.Single);
     }
 }
