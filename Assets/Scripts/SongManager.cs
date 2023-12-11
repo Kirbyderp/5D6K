@@ -16,7 +16,7 @@ public class SongManager : MonoBehaviour
                                                                      { { 90, 55, 35 }, { 90, 55, 35 }, { 90, 55, 35 } } };
                                                                    //notesInSong[curSongIndex, songDiff, songMode]
     private Song curSong;
-    private int curSongIndex = 1;
+    private int curSongIndex = 2;
     private bool readyToPlay = false, isSongPlaying = false, isSongPaused = false, tutPause = false;
     private float curTime;
     private int curSec = 0;
@@ -56,17 +56,17 @@ public class SongManager : MonoBehaviour
     private float accuracy;
     private int accuracyWeight;
     private TMPro.TextMeshProUGUI statsSummary;
+    private TMPro.TextMeshProUGUI iSCombo, iSAcc, iSNotes;
 
     //DEBUG VARS
     //public GameObject[] outlines;
     //public GameObject leftHandSphere, rightHandSphere;
-    public TMPro.TextMeshProUGUI hits2D, hits3D;
 
     //0 = Easy, Both; 1 = Medium, 2D Only; 2 = Hard, 3D Only
     private int songDiff = 0, songMode = 0;
 
     private bool twoDebug = false;
-    public Image colorTest;
+    //public Image colorTest;
 
     // Start is called before the first frame update
     void Start()
@@ -110,7 +110,10 @@ public class SongManager : MonoBehaviour
                 }
             }
         }
-        
+        iSAcc = GameObject.Find("In Song Accuracy Text").GetComponent<TMPro.TextMeshProUGUI>();
+        iSCombo = GameObject.Find("In Song Combo Text").GetComponent<TMPro.TextMeshProUGUI>();
+        iSNotes = GameObject.Find("In Song Notes Hit Text").GetComponent<TMPro.TextMeshProUGUI>();
+
         /*outlines = new GameObject[4];
         for (int i = 0; i < 4; i++)
         {
@@ -486,8 +489,10 @@ public class SongManager : MonoBehaviour
                 //Debug.Log(curTime);
             }
 
-            hits2D.text = hit2Dcount + " / " + note2Ds.Length;
-            hits3D.text = hit3Dcount + " / " + note3Ds.Length + "\n" + numMisses;
+            iSAcc.text = "Accuracy:\n" + (((float)((int)(accuracy * 10000))) / 100) + "%";
+            iSCombo.text = "Combo:\n" + curCombo;
+            iSNotes.text = "Notes Hit:\n" + (hit2Dcount + hit3Dcount) + " / " + ((songMode != 2 ? note2Ds.Length : 0)
+                                                                              + (songMode != 1 ? note3Ds.Length : 0));
         }
     }
 

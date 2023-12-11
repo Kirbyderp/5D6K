@@ -14,10 +14,13 @@ public class MenuManager : MonoBehaviour
     private bool waitingForMenuAnim = false, startingSong = false, unpausingSong = false, restartingSong = false;
     private float[] indXLocalPos = { -48.30002f, -.9000242f, 46.49997f };
     private int storedSongMode = -1;
+    private bool optionsMenuFound = false, colorMenuDone = false;
 
     // Start is called before the first frame update
     void Start()
     {
+        optionsMenu = GameObject.Find("Options Menu");
+        optionsMenuFound = true;
         songManager = GameObject.Find("SongManager").GetComponent<SongManager>();
         songManager.SetColorManager(GameObject.Find("Color Canvas").GetComponent<ColorManager>());
         songManager.SetStatsSummary(GameObject.Find("Song Stats Summary Text").GetComponent<TMPro.TextMeshProUGUI>());
@@ -34,13 +37,12 @@ public class MenuManager : MonoBehaviour
         missText = GameObject.Find("Least Misses Text").GetComponent<TMPro.TextMeshProUGUI>();
         accText = GameObject.Find("Highest Acc Text").GetComponent<TMPro.TextMeshProUGUI>();
         comboText = GameObject.Find("Highest Combo Text").GetComponent<TMPro.TextMeshProUGUI>();
-        UpdateStatsText(88, 107, 1, 0, 0);
+        UpdateStatsText(74, 90, 2, 0, 0);
 
         mainMenu = GameObject.Find("Main Menu");
         songMenu = GameObject.Find("Song Menu");
         pauseMenu = GameObject.Find("Pause Menu");
         creditsMenu = GameObject.Find("Credits Menu");
-        optionsMenu = GameObject.Find("Options Menu");
         endMenu = GameObject.Find("End Song Menu");
         songMenu.transform.localScale = Vector3.zero;
         songMenu.SetActive(false);
@@ -51,8 +53,15 @@ public class MenuManager : MonoBehaviour
         optionsMenu.transform.localScale = Vector3.zero;
         endMenu.transform.localScale = Vector3.zero;
         endMenu.SetActive(false);
-        tutInfo.SetActive(false);
+        lavInfo.SetActive(false);
         bDTInfo.SetActive(false);
+        smInd.SetActive(false);
+        sdInd.SetActive(false);
+        tutInfo.SetActive(true);
+        if (colorMenuDone)
+        {
+            optionsMenu.SetActive(false);
+        }
     }
 
     // Update is called once per frame
@@ -63,10 +72,17 @@ public class MenuManager : MonoBehaviour
 
     public void ColorHasSetUp()
     {
-        optionsMenu.SetActive(false);
+        if (optionsMenuFound)
+        {
+            optionsMenu.SetActive(false);
+        }
+        else
+        {
+            colorMenuDone = true;
+        }
     }
 
-    IEnumerator ShrinkMenuAnim(GameObject prevMenu)
+        IEnumerator ShrinkMenuAnim(GameObject prevMenu)
     {
         for (int frame = 0; frame < 50; frame++)
         {
