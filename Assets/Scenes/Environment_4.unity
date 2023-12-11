@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.27015585, g: 0.039751153, b: 0.2086355, a: 1}
+  m_IndirectSpecularColor: {r: 0.27015585, g: 0.039751153, b: 0.20863548, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -34119,8 +34119,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a4c87ae3696f24f42851be89d21f3956, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 806277659}
   m_SourcePrefab: {fileID: 100100000, guid: a4c87ae3696f24f42851be89d21f3956, type: 3}
+--- !u!1 &806277658 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a4c87ae3696f24f42851be89d21f3956, type: 3}
+  m_PrefabInstance: {fileID: 806277657}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &806277659
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806277658}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.5771806, y: 2.91835, z: 0.8037792}
+  m_Center: {x: 0, y: 0, z: -0.5981106}
 --- !u!1001 &807527579
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -56529,11 +56558,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4c87ae3696f24f42851be89d21f3956, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.3
+      value: 16.69
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4c87ae3696f24f42851be89d21f3956, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5.42
+      value: 13.92
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4c87ae3696f24f42851be89d21f3956, type: 3}
       propertyPath: m_LocalRotation.w
