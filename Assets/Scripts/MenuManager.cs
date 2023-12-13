@@ -16,6 +16,7 @@ public class MenuManager : MonoBehaviour
     private float[] indXLocalPos = { -48.30002f, -.9000242f, 46.49997f };
     private int storedSongMode = -1;
     private bool optionsMenuFound = false, colorMenuDone = false, songManagerDone = false;
+    private bool isEndToSong = false;
 
     // Start is called before the first frame update
     void Start()
@@ -144,6 +145,10 @@ public class MenuManager : MonoBehaviour
         prevMenu.transform.localScale = Vector3.zero;
         prevMenu.SetActive(false);
         nextMenu.SetActive(true);
+        if (isEndToSong)
+        {
+            songManager.SongEndUpdateStats();
+        }
         for (int frame = 0; frame < 50; frame++)
         {
             nextMenu.transform.localScale += new Vector3(1 / 50f, 1 / 50f, 1 / 50f);
@@ -347,6 +352,7 @@ public class MenuManager : MonoBehaviour
         if (!waitingForMenuAnim)
         {
             waitingForMenuAnim = true;
+            isEndToSong = true;
             StartCoroutine(SwitchMenuAnim(endMenu, songMenu));
         }
     }
@@ -371,61 +377,87 @@ public class MenuManager : MonoBehaviour
         durText.text = songDur / 60 + ":" + songDur % 60;
         countText.text = "" + noteCount;
 
-        if (songMode == -1 && storedSongMode == -1)
+        if (songIndex != 2)
         {
-            if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songManager.GetSongMode()) == int.MaxValue)
+            if (songMode == -1 && storedSongMode == -1)
             {
-                lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
-                lmLabel.text = "Least\nMisses:";
-                missText.text = "n/a";
+                if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songManager.GetSongMode()) == int.MaxValue)
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
+                    lmLabel.text = "Least\nMisses:";
+                    missText.text = "n/a";
+                }
+                else if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songManager.GetSongMode()) == 0)
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Center;
+                    lmLabel.text = "Full Cleared!";
+                    missText.text = "";
+                }
+                else
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
+                    lmLabel.text = "Least\nMisses:";
+                    missText.text = "" + PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songManager.GetSongMode());
+                }
+                accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + songDiff) + songManager.GetSongMode()) * 10000))) / 100) + "%";
+                comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + songDiff) + songManager.GetSongMode());
             }
-            else if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songManager.GetSongMode()) == 0)
+            else if (songMode == -1)
             {
-                lmLabel.alignment = TMPro.TextAlignmentOptions.Center;
-                lmLabel.text = "Full Cleared!";
-                missText.text = "";
+                if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + storedSongMode) == int.MaxValue)
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
+                    lmLabel.text = "Least\nMisses:";
+                    missText.text = "n/a";
+                }
+                else if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + storedSongMode) == 0)
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Center;
+                    lmLabel.text = "Full Cleared!";
+                    missText.text = "";
+                }
+                else
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
+                    lmLabel.text = "Least\nMisses:";
+                    missText.text = "" + PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + storedSongMode);
+                }
+                accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + songDiff) + storedSongMode) * 10000))) / 100) + "%";
+                comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + songDiff) + storedSongMode);
             }
             else
             {
-                lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
-                lmLabel.text = "Least\nMisses:";
-                missText.text = "" + PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songManager.GetSongMode());
+                if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songMode) == int.MaxValue)
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
+                    lmLabel.text = "Least\nMisses:";
+                    missText.text = "n/a";
+                }
+                else if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songMode) == 0)
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Center;
+                    lmLabel.text = "Full Cleared!";
+                    missText.text = "";
+                }
+                else
+                {
+                    lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
+                    lmLabel.text = "Least\nMisses:";
+                    missText.text = "" + PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songMode);
+                }
+                accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + songDiff) + songMode) * 10000))) / 100) + "%";
+                comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + songDiff) + songMode);
             }
-            accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + songDiff) + songManager.GetSongMode()) * 10000))) / 100) + "%";
-            comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + songDiff) + songManager.GetSongMode());
-        }
-        else if (songMode == -1)
-        {
-            if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + storedSongMode) == int.MaxValue)
-            {
-                lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
-                lmLabel.text = "Least\nMisses:";
-                missText.text = "n/a";
-            }
-            else if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + storedSongMode) == 0)
-            {
-                lmLabel.alignment = TMPro.TextAlignmentOptions.Center;
-                lmLabel.text = "Full Cleared!";
-                missText.text = "";
-            }
-            else
-            {
-                lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
-                lmLabel.text = "Least\nMisses:";
-                missText.text = "" + PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + storedSongMode);
-            }
-            accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + songDiff) + storedSongMode) * 10000))) / 100) + "%";
-            comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + songDiff) + storedSongMode);
         }
         else
         {
-            if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songMode) == int.MaxValue)
+            if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + 0) + 0) == int.MaxValue)
             {
                 lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
                 lmLabel.text = "Least\nMisses:";
                 missText.text = "n/a";
             }
-            else if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songMode) == 0)
+            else if (PlayerPrefs.GetInt((("leastMisses" + songIndex) + 0) + 0) == 0)
             {
                 lmLabel.alignment = TMPro.TextAlignmentOptions.Center;
                 lmLabel.text = "Full Cleared!";
@@ -435,10 +467,10 @@ public class MenuManager : MonoBehaviour
             {
                 lmLabel.alignment = TMPro.TextAlignmentOptions.Left;
                 lmLabel.text = "Least\nMisses:";
-                missText.text = "" + PlayerPrefs.GetInt((("leastMisses" + songIndex) + songDiff) + songMode);
+                missText.text = "" + PlayerPrefs.GetInt((("leastMisses" + songIndex) + 0) + 0);
             }
-            accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + songDiff) + storedSongMode) * 10000))) / 100) + "%";
-            comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + songDiff) + songMode);
+            accText.text = (((float)((int)(PlayerPrefs.GetFloat((("highestAccuracy" + songIndex) + 0) + 0) * 10000))) / 100) + "%";
+            comboText.text = "" + PlayerPrefs.GetInt((("maxCombo" + songIndex) + 0) + 0);
         }
     }
 

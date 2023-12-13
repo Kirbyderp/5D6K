@@ -172,6 +172,11 @@ public class SongManager : MonoBehaviour
     {
         return songMode;
     }
+    
+    public void SongEndUpdateStats()
+    {
+        menuManager.UpdateStatsText(songDurs[curSongIndex], notesInSong[curSongIndex, songDiff, songMode], curSongIndex, songDiff, songMode);
+    }
 
     public void SetSongMode(int modeIn)
     {
@@ -628,25 +633,51 @@ public class SongManager : MonoBehaviour
 
         //Update Player Prefs - UNCOMMENT FOR FINAL BUILD
         /*
-        if (PlayerPrefs.GetInt((("bestHit2Dcount" + curSongIndex) + songDiff) + songMode) < hit2Dcount)
+        if (curSongIndex != 2)
         {
-            PlayerPrefs.SetInt((("bestHit2Dcount" + curSongIndex) + songDiff) + songMode, hit2Dcount);
+            if (PlayerPrefs.GetInt((("bestHit2Dcount" + curSongIndex) + songDiff) + songMode) < hit2Dcount)
+            {
+                PlayerPrefs.SetInt((("bestHit2Dcount" + curSongIndex) + songDiff) + songMode, hit2Dcount);
+            }
+            if (PlayerPrefs.GetInt((("bestHit3Dcount" + curSongIndex) + songDiff) + songMode) < hit3Dcount)
+            {
+                PlayerPrefs.SetInt((("bestHit3Dcount" + curSongIndex) + songDiff) + songMode, hit3Dcount);
+            }
+            if (PlayerPrefs.GetInt((("maxCombo" + curSongIndex) + songDiff) + songMode) < maxCombo)
+            {
+                PlayerPrefs.SetInt((("maxCombo" + curSongIndex) + songDiff) + songMode, maxCombo);
+            }
+            if (PlayerPrefs.GetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode) < accuracy)
+            {
+                PlayerPrefs.SetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode, accuracy);
+            }
+            if (PlayerPrefs.GetInt((("leastMisses" + curSongIndex) + songDiff) + songMode) > numMisses)
+            {
+                PlayerPrefs.SetInt((("leastMisses" + curSongIndex) + songDiff) + songMode, numMisses);
+            }
         }
-        if (PlayerPrefs.GetInt((("bestHit3Dcount" + curSongIndex) + songDiff) + songMode) < hit3Dcount)
+        else
         {
-            PlayerPrefs.SetInt((("bestHit3Dcount" + curSongIndex) + songDiff) + songMode, hit3Dcount);
-        }
-        if (PlayerPrefs.GetInt((("maxCombo" + curSongIndex) + songDiff) + songMode) < maxCombo)
-        {
-            PlayerPrefs.SetInt((("maxCombo" + curSongIndex) + songDiff) + songMode, maxCombo);
-        }
-        if (PlayerPrefs.GetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode) < accuracy)
-        {
-            PlayerPrefs.SetFloat((("highestAccuracy" + curSongIndex) + songDiff) + songMode, accuracy);
-        }
-        if (PlayerPrefs.GetInt((("leastMisses" + curSongIndex) + songDiff) + songMode) > numMisses)
-        {
-            PlayerPrefs.SetInt((("leastMisses" + curSongIndex) + songDiff) + songMode, numMisses);
+            if (PlayerPrefs.GetInt((("bestHit2Dcount" + curSongIndex) + 0) + 0) < hit2Dcount)
+            {
+                PlayerPrefs.SetInt((("bestHit2Dcount" + curSongIndex) + 0) + 0, hit2Dcount);
+            }
+            if (PlayerPrefs.GetInt((("bestHit3Dcount" + curSongIndex) + 0) + 0) < hit3Dcount)
+            {
+                PlayerPrefs.SetInt((("bestHit3Dcount" + curSongIndex) + 0) + 0, hit3Dcount);
+            }
+            if (PlayerPrefs.GetInt((("maxCombo" + curSongIndex) + 0) + 0) < maxCombo)
+            {
+                PlayerPrefs.SetInt((("maxCombo" + curSongIndex) + 0) + 0, maxCombo);
+            }
+            if (PlayerPrefs.GetFloat((("highestAccuracy" + curSongIndex) + 0) + 0) < accuracy)
+            {
+                PlayerPrefs.SetFloat((("highestAccuracy" + curSongIndex) + 0) + 0, accuracy);
+            }
+            if (PlayerPrefs.GetInt((("leastMisses" + curSongIndex) + 0) + 0) > numMisses)
+            {
+                PlayerPrefs.SetInt((("leastMisses" + curSongIndex) + 0) + 0, numMisses);
+            }
         }*/
 
         menuManager.EndSongMenu();
