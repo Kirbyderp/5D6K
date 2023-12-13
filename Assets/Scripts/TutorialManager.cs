@@ -7,7 +7,7 @@ public class TutorialManager : MonoBehaviour
     private float[] pauseTimes = { 0, 8.7f, 17.5f, 39.1f, 90 };
     private int[] numTextBoxes = { 4, 4, 3, 1, 0 };
     private int curTextBox = 0;
-    private string[][] textBoxes = { new string[] { "Welcome to the Rhythmulti tutorial!\n\n" +
+    private string[][] textBoxes = { new string[] { "Welcome to the RhythMulti tutorial!\n\n" +
                                                     "In this game, there are two kinds of notes that you will need to hit.",
                                                     "The first kind of notes are 2D notes.\n\n2D notes will move down the four " +
                                                     "tracks that are ahead of you. When a 2D note fully obscures the target " +

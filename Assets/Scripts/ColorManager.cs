@@ -26,9 +26,30 @@ public class ColorManager : MonoBehaviour
         {
             if (!PlayerPrefs.HasKey("Track " + i + " R"))
             {
-                PlayerPrefs.SetFloat("Track " + i + " R", .5f);
-                PlayerPrefs.SetFloat("Track " + i + " G", .5f);
-                PlayerPrefs.SetFloat("Track " + i + " B", .5f);
+                if (i == 1 || i == 4)
+                {
+                    PlayerPrefs.SetFloat("Track " + i + " R", 0f);
+                    PlayerPrefs.SetFloat("Track " + i + " G", 1f);
+                    PlayerPrefs.SetFloat("Track " + i + " B", .7f);
+                }
+                else if (i == 2 || i == 3)
+                {
+                    PlayerPrefs.SetFloat("Track " + i + " R", 1f);
+                    PlayerPrefs.SetFloat("Track " + i + " G", .6f);
+                    PlayerPrefs.SetFloat("Track " + i + " B", 0f);
+                }
+                else if (i == 5)
+                {
+                    PlayerPrefs.SetFloat("Track " + i + " R", 0f);
+                    PlayerPrefs.SetFloat("Track " + i + " G", 0f);
+                    PlayerPrefs.SetFloat("Track " + i + " B", .8f);
+                }
+                else
+                {
+                    PlayerPrefs.SetFloat("Track " + i + " R", 1f);
+                    PlayerPrefs.SetFloat("Track " + i + " G", 0f);
+                    PlayerPrefs.SetFloat("Track " + i + " B", 0f);
+                }
             }
             trackButtons[i - 1].color = new Color(PlayerPrefs.GetFloat("Track " + i + " R"),
                                                   PlayerPrefs.GetFloat("Track " + i + " G"),
