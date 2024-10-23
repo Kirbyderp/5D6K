@@ -274,7 +274,7 @@ public class SongManager : MonoBehaviour
 
             if (songMode != 2)
             {
-                //Move all spawned notes down
+                //Move all spawned 2D notes down the track
                 foreach (Track2D track in all2DTracks)
                 {
                     track.MoveNotesDown(deltaTime / (curSong.GetBeatLength() * spawn2DBeatsInAdvance)
@@ -284,12 +284,14 @@ public class SongManager : MonoBehaviour
 
             if (songMode != 1)
             {
+                //Move all spawned 3D notes towards the player
                 foreach (Track3D track in all3DTracks)
                 {
                     track.MoveNotesForwards(deltaTime / (curSong.GetBeatLength() * spawn3DBeatsInAdvance), note3Ds);
                 }
             }
 
+            //Check for button input from the player for hitting 2D notes
             if (songMode != 2)
             {
                 //Check if user pressed or released any buttons down for 2D Notes
@@ -355,6 +357,7 @@ public class SongManager : MonoBehaviour
                 }
             }
 
+            //Check for if the player's controllers are hitting any 3D notes
             if (songMode != 1)
             {
                 //Check where the user's hands are for 3D notes

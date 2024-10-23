@@ -43,6 +43,8 @@ public class Song
 
         all2DNotes = new Note2D[note2DCount];
         all3DNotes = new Note3D[note3DCount];
+        
+        //Collects all of the 2D note information and puts it into a usable form
         for (int i = 0; i < note2DCount; i++)
         {
             line = reader.ReadLine();
@@ -56,7 +58,10 @@ public class Song
                                        float.Parse(line.Substring(4)));
             //Debug.Log(all2DNotes[i]);
         }
+
         line = reader.ReadLine();
+
+        //Collects all of the 3D note information and puts it into a usable form
         for (int i = 0; i < note3DCount; i++)
         {
             line = reader.ReadLine();
